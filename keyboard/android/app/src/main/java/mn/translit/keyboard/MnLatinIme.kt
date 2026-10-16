@@ -20,7 +20,8 @@ import java.util.concurrent.Executors
  */
 class MnLatinIme : InputMethodService() {
     private lateinit var dict: WordDictionary
-    private var model: Transliterator? = null
+    private var model: Transliterator? = null      // seq2seq (slow, best): fallback for words the tagger cannot label
+    private var tagger: TaggerTransliterator? = null  // one-pass tagger (~1 ms): the primary path
     private val worker = Executors.newSingleThreadExecutor()
     private val ui = Handler(Looper.getMainLooper())
     private lateinit var strip: LinearLayout
@@ -33,7 +34,10 @@ class MnLatinIme : InputMethodService() {
     override fun onCreate() {
         super.onCreate()
         dict = WordDictionary(this)
-        worker.execute { model = Transliterator(this) }  // ~1 s to load both graphs
+        worker.execute {
+            tagger = runCatching { TaggerTransliterator(this) }.getOrNull()  // optional asset
+            model = Transliterator(this)  // ~1 s to load both graphs
+        }
     }
 
     override fun onCreateInputView(): View {
@@ -81,7 +85,10 @@ class MnLatinIme : InputMethodService() {
         if (fromDict != null) showSuggestions(fromDict.words + latin) else showSuggestions(listOf(latin))
         if (fromDict != null && prefix.isEmpty()) return
         worker.execute {
-            val cyr = model?.convertInContext(prefix, latin) ?: return@execute
+            // tagger first (~1 ms); the seq2seq model only when a byte had no known label
+            val tagged = tagger?.convertInContext(prefix, latin)
+            val cyr = if (tagged != null && tagged.second) tagged.first
+                      else model?.convertInContext(prefix, latin) ?: tagged?.first ?: return@execute
             ui.post {
                 if (id != request) return@post
                 val rest = (fromDict?.words ?: emptyList()).filter { !it.equals(cyr, ignoreCase = true) }

@@ -22,6 +22,9 @@ python tools/chat_data.py expand|pairs|test|mix        # chat-style stage-3 data
 python tools/prune_model.py --teacher models/byt5-small-chat2 --out models/byt5-pruned-4e2d-1024 --enc-layers 0,3,7,11 --dec-layers 0,2 --d-ff 1024
 python tools/phone_bench.py --model models/byt5-pruned-4e2d-1024-ft2   # CPU one-message-at-a-time CER/latency, fp32 vs int8
 python tools/export_onnx.py --check && python tools/word_dict.py && python tools/pack_keyboard_assets.py   # Android keyboard assets
+python tools/context_eval.py                           # word accuracy alone vs with 2 previous Latin words (keyboard)
+python tools/xai_attention.py --text "za bi margaash ugluu irne" --errors results/chat2/pred_real_test.csv   # heat map + error categories
+python tools/tagger_data.py && python train/train_tagger.py && python tools/export_tagger_onnx.py --check  # encoder-only tagger
 MODEL_DIR=models/byt5-mn uvicorn app.main:app --port 7860
 python tools/youtube_comments.py && python annotate/db.py load data/raw/youtube_candidates.jsonl
 uvicorn annotate.main:app --port 8000                  # or: docker compose up annotate

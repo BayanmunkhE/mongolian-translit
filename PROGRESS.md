@@ -109,6 +109,25 @@ Tick boxes as you go (`[x]`). GitHub and VS Code's Markdown preview render this 
     - `keyboard/android/`: Kotlin IME prototype (QWERTY grid, suggestion strip, user dictionary, ONNX greedy
       decode mirroring the Python harness). **Not built or run yet** (no Android SDK on this PC) — needs Android
       Studio + a phone; see its README.
+- **Afternoon 2026-10-16 (user picked tracks 2, 3, 5):**
+  - **Keyboard context (track 2):** converting a word with its two previous Latin words raises word accuracy from
+    75% to 87% on both test sets (`tools/context_eval.py`, `results/keyboard/context_eval.md`); the IME now keeps
+    the last two committed Latin words and strips the prefix's conversion (`Transliterator.convertInContext`).
+  - **Rubric gaps (track 3):** chrF/BLEU added to `corpus_metrics` (small-chat2 real test chrF 89.3, BLEU 69.0;
+    naive 53.7 / 15.7); phone_bench reports p99; `tools/xai_attention.py` draws cross-attention heat maps
+    (clean monotonic diagonal, `results/xai/`) and an error-category table; git repo initialised (portable
+    MinGit, first commits 91925ca, 1b07e54) with `.github/workflows/tests.yml`. **Cloud: HF now returns 402 for
+    Gradio Spaces too** ("hosting Gradio and Docker Spaces on free cpu-basic requires PRO") — `gradio_app.py` +
+    `tools/push_space.py` are ready for a PRO account; otherwise a free host must serve the 48 MB ONNX model.
+  - **Encoder-only tagger (track 5):** `tools/tagger_data.py` (byte → output-string labels by edit alignment,
+    4000-label vocab covers 99.99% of bytes), `train/train_tagger.py` (pruned 4-block encoder 27.7M + linear head,
+    ~14 steps/s), `tools/export_tagger_onnx.py`. **Result (`models/tagger-4e`, best step 14k, early stop at 18k):**
+    dev-mix CER 6.52 (pruned seq2seq 5.6, teacher 3.7); ONNX int8 **33.8 MB**, real test **CER 9.18** / chat
+    **8.44** — on par with the pruned seq2seq's 9.0 / 9.1 of round 3, but **1–2 ms per message and 0.5 ms per
+    word** on the desktop (seq2seq int8: 350 / 145 ms per message, 8 ms per word). The keyboard target
+    (<10 ms/word, ≤ ~30 MB) is met with no decode loop; `results/phone/bench_tagger-4e_onnx.md`. Next: feed
+    it more steps / the full 1M rows (it was trained on 400k), and use it as the keyboard's primary model with the
+    seq2seq only for UNK labels.
     Broken dirs: `byt5-student-30m`, `-copy`, `-30m-v2`, `-30m-v3`, `-30m-v4` (deletable, ~0.5 GB each).
 - **Demo: n-best word choice (2026-10-15).** `/transliterate` returns `candidates` (beam n-best, casing-only
   duplicates merged, real-odds softmax) and `alternatives` (word positions where candidates differ,
