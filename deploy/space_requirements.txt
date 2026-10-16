@@ -1,0 +1,8 @@
+# Hugging Face Space (Gradio SDK, free CPU tier). CPU-only torch keeps the build small.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.4
+transformers>=5.0
+huggingface_hub
+numpy
+bm25s>=0.2
+sentence-transformers>=3.0

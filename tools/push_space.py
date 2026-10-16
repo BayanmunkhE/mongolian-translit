@@ -15,10 +15,11 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL = "models/byt5-small-v4-real"
-CODE_DIRS = ["app", "baselines", "translit", "rag"]
-EXTRA = {"Dockerfile": "deploy/space.Dockerfile", "README.md": "deploy/hf_space_README.md",
-         "requirements-app.txt": "requirements-app.txt",
+MODEL = "models/byt5-small-chat2"
+CODE_DIRS = ["baselines", "translit", "rag"]
+# Gradio SDK Space (free CPU tier; Docker Spaces need PRO): gradio_app.py at the root, requirements.txt installed
+EXTRA = {"gradio_app.py": "gradio_app.py", "README.md": "deploy/hf_space_README.md",
+         "requirements.txt": "deploy/space_requirements.txt",
          "data/rag/passages.jsonl": "data/rag/passages.jsonl",
          "data/rag/multilingual-e5-base.npy": "data/rag/multilingual-e5-base.npy"}
 MODEL_FILES = ["config.json", "generation_config.json", "model.safetensors", "tokenizer_config.json",
@@ -63,7 +64,7 @@ def main(argv=None):
     api = HfApi(token=token)
     user = api.whoami()["name"]
     repo_id = f"{user}/{args.name}"
-    api.create_repo(repo_id, repo_type="space", space_sdk="docker", exist_ok=True, private=False)
+    api.create_repo(repo_id, repo_type="space", space_sdk="gradio", exist_ok=True, private=False)
     ops = [CommitOperationAdd(path_in_repo=dest, path_or_fileobj=str(src)) for dest, src in todo.items()]
     api.create_commit(repo_id, operations=ops, commit_message="Deploy demo", repo_type="space")
     print(f"Uploaded. Build log and app: https://huggingface.co/spaces/{repo_id}")

@@ -50,3 +50,4 @@ keyboard/android/app/src/main/assets/
 keyboard/android/.gradle/
 keyboard/android/**/build/
 keyboard/android/local.properties
+results/llm_pilot/cache.jsonl
