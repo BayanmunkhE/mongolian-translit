@@ -1,0 +1,62 @@
+{
+  "synthetic_test": {
+    "byt5-scratch": {
+      "n": 2000,
+      "cer": 1.0,
+      "wer": 1.0,
+      "exact": 0.0,
+      "cer_ci": 1.0,
+      "wer_ci": 1.0,
+      "exact_ci": 0.0,
+      "ambig_acc": 0.0,
+      "acc[ө/о]": 0.0,
+      "acc[ү/у]": 0.0,
+      "acc[х]": 0.0,
+      "acc[и/й/ь/ъ]": 0.0,
+      "acc[ш/щ]": 0.0,
+      "eng_preserved": 0.0,
+      "eng_total": 730,
+      "seconds": 136.88
+    }
+  },
+  "real_test": {
+    "byt5-scratch": {
+      "n": 195,
+      "cer": 1.0,
+      "wer": 1.0,
+      "exact": 0.0,
+      "cer_ci": 1.0,
+      "wer_ci": 1.0,
+      "exact_ci": 0.0,
+      "ambig_acc": 0.0,
+      "acc[ө/о]": 0.0,
+      "acc[ү/у]": 0.0,
+      "acc[х]": 0.0,
+      "acc[и/й/ь/ъ]": 0.0,
+      "acc[ш/щ]": 0.0,
+      "eng_preserved": 0.0,
+      "eng_total": 39,
+      "seconds": 9.02
+    }
+  },
+  "valid_v3": {
+    "byt5-scratch": {
+      "n": 2000,
+      "cer": 1.0,
+      "wer": 1.0,
+      "exact": 0.0,
+      "cer_ci": 1.0,
+      "wer_ci": 1.0,
+      "exact_ci": 0.0,
+      "ambig_acc": 0.0,
+      "acc[ө/о]": 0.0,
+      "acc[ү/у]": 0.0,
+      "acc[х]": 0.0,
+      "acc[и/й/ь/ъ]": 0.0,
+      "acc[ш/щ]": 0.0,
+      "eng_preserved": 0.0,
+      "eng_total": 790,
+      "seconds": 141.0
+    }
+  }
+}

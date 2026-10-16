@@ -1,0 +1,11 @@
+.git
+**/__pycache__
+.venv
+venv
+.pytest_cache
+data
+results
+checkpoints
+notebooks
+wandb
+runs

@@ -1,0 +1,17 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # the fast tests need no torch: baselines, metrics, mixed-script handling, candidates, RAG chunking
+      - run: pip install pytest fastapi pydantic bm25s numpy
+      - run: python -m pytest -q

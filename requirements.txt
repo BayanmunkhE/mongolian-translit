@@ -1,0 +1,12 @@
+# Training + evaluation (Colab / GPU machine). Python 3.10-3.12 recommended.
+torch>=2.1
+transformers>=4.46
+datasets>=2.18
+accelerate>=0.30
+sentencepiece        # only needed for google/mt5-small
+rapidfuzz>=3.0       # fast edit distance (pure-Python fallback exists)
+numpy
+pytest
+bm25s>=0.2           # RAG retrieval (rag/, eval/retrieval_eval.py)
+sentence-transformers>=3.0
+anthropic>=1.13      # LLM baseline (eval/llm_translit.py)

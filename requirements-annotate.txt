@@ -1,0 +1,3 @@
+# Annotation UI only (annotate/): no torch needed.
+fastapi>=0.110
+uvicorn>=0.29

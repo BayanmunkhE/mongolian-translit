@@ -1,0 +1,10 @@
+# docker compose up annotate   -> http://localhost:8000 (annotation UI, data in ./data/annotate.db)
+services:
+  annotate:
+    build:
+      context: .
+      dockerfile: annotate/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data

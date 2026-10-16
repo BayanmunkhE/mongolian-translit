@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Латин → Кирилл хөрвүүлэгч</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1d2330; --muted: #5d6677; --line: #dfe3ea;
+    --accent: #1f5fbf; --accent-text: #fff; --warn-bg: #fff7e0; --warn-line: #f0d48a; --kept: #b5521a;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --card: #1d2128; --text: #e7eaf0; --muted: #9aa3b2; --line: #2e343e;
+      --accent: #5b9bff; --accent-text: #0b1220; --warn-bg: #2b2516; --warn-line: #6b5a2a; --kept: #f2a65a;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  label { font-weight: 600; display: block; margin-bottom: 6px; }
+  textarea { width: 100%; min-height: 110px; resize: vertical; padding: 10px 12px; font: inherit;
+             border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); }
+  #go { background: var(--accent); color: var(--accent-text); border-color: var(--accent);
+        padding: 8px 20px; font-weight: 600; }
+  #go:disabled { opacity: .6; cursor: wait; }
+  .hint { color: var(--muted); font-size: .875rem; }
+  .examples { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .group .label { color: var(--muted); font-size: .8rem; min-width: 84px; }
+  .examples button { background: transparent; color: var(--text); padding: 4px 10px; font-size: .9rem; }
+  .examples button:hover { border-color: var(--accent); }
+  .examples button.search { border-color: var(--accent); }
+  .fix { color: var(--accent); font-weight: 600; }
+  .kept { color: var(--kept); font-weight: 600; }
+  .legend { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+  .altword { font: inherit; font-size: 1.1rem; color: var(--accent); background: transparent; border: none;
+             border-bottom: 2px dashed var(--accent); border-radius: 0; padding: 0 2px; cursor: pointer; }
+  .cands { color: var(--muted); font-size: .85rem; margin-top: 8px; }
+  .cands span { cursor: pointer; }
+  .cands span:hover { color: var(--accent); text-decoration: underline; }
+  .note summary { cursor: pointer; font-weight: 600; }
+  .outputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 700px) { .outputs { grid-template-columns: 1fr; } }
+  .out h2 { font-size: 1rem; margin: 0 0 2px; }
+  .out .tag { color: var(--muted); font-size: .8rem; margin-bottom: 8px; }
+  .out .text { min-height: 60px; white-space: pre-wrap; font-size: 1.1rem; word-break: break-word; }
+  .out.primary { border-color: var(--accent); }
+  .copy { background: transparent; color: var(--muted); padding: 2px 8px; font-size: .8rem; float: right; }
+  .note { margin-top: 20px; background: var(--warn-bg); border: 1px solid var(--warn-line);
+          border-radius: 10px; padding: 12px 16px; font-size: .9rem; }
+  .note ul { margin: 6px 0 0; padding-left: 20px; }
+  .error { color: #d14343; }
+  #search-card { margin-top: 16px; }
+  #search-card[hidden], #search-out[hidden] { display: none; }
+  #search-go { background: transparent; color: var(--accent); border-color: var(--accent); padding: 8px 20px; font-weight: 600; }
+  #search-go:disabled { opacity: .6; cursor: wait; }
+  .hits h3 { font-size: 1rem; margin: 0 0 2px; }
+  .hits .q { color: var(--muted); font-size: .9rem; margin-bottom: 8px; word-break: break-word; }
+  .hits ol { margin: 0; padding-left: 20px; }
+  .hits li { margin-bottom: 10px; }
+  .hits li b { display: block; }
+  .hits li span { color: var(--muted); font-size: .875rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Латин үсгээр бичсэн монгол текстийг кирилл болгох</h1>
+  <p class="sub">Жишээ: <i>za bi margaash ugluu irne</i> → <i>За би маргааш өглөө ирнэ</i></p>
+
+  <div class="card">
+    <label for="inp">Латин, кирилл эсвэл холимог текст</label>
+    <textarea id="inp" maxlength="1000" placeholder="sain baina uu, margaash hed tsagt uulzah ve?"></textarea>
+    <div class="row">
+      <button id="go">Хөрвүүлэх</button>
+      <span class="hint">Ctrl + Enter · дээд тал нь 1000 тэмдэгт</span>
+      <span class="hint" id="time"></span>
+    </div>
+    <div class="examples" id="examples" aria-label="Жишээнүүд"></div>
+  </div>
+
+  <div class="outputs">
+    <div class="card out primary">
+      <button class="copy" data-target="model-out">Хуулах</button>
+      <h2>Манай загвар</h2>
+      <div class="tag" id="model-name">ByT5-small, нарийвчлан сургасан</div>
+      <div class="text" id="model-out"></div>
+      <div class="legend" id="legend" hidden><span class="fix">цэнхэр</span> = энгийн дүрмээс ялгаатай засвар,
+        <span class="kept">улбар</span> = хэвээр үлдсэн латин үг, <span class="altword">тасархай зураас</span> = өөр хувилбартай үг, дарж сонгоно</div>
+      <div class="cands" id="cands" hidden></div>
+    </div>
+    <div class="card out">
+      <button class="copy" data-target="base-out">Хуулах</button>
+      <h2>Энгийн дүрэм</h2>
+      <div class="tag">MNS 5217:2012 стандартын урвуу дүрэм</div>
+      <div class="text" id="base-out"></div>
+    </div>
+  </div>
+
+  <div class="card" id="search-card" hidden>
+    <div class="row" style="margin-top:0">
+      <button id="search-go">Хөрвүүлээд Википедиагаас хайх</button>
+      <span class="hint">Латинаар шууд хайх ба кирилл болгоод хайхыг зэрэгцүүлнэ</span>
+      <span class="hint" id="search-time"></span>
+    </div>
+    <div class="outputs" id="search-out" hidden>
+      <div class="hits">
+        <h3>Латинаар шууд хайвал</h3>
+        <div class="q" id="latin-q"></div>
+        <ol id="latin-hits"></ol>
+      </div>
+      <div class="hits">
+        <h3>Кирилл болгоод хайвал</h3>
+        <div class="q" id="cyr-q"></div>
+        <ol id="cyr-hits"></ol>
+      </div>
+    </div>
+  </div>
+
+  <details class="note">
+    <summary>Судалгааны прототип: анхааруулга</summary>
+    Энэ нь AI Engineer курсийн төслийн хүрээнд хийсэн туршилтын систем.
+    <ul>
+      <li>Загварыг синтетик өгөгдөл болон гараар засварласан YouTube сэтгэгдэл дээр сургасан. Хүний нэр, ховор үг, шинэ хар үгэнд алдаа гарч болно.</li>
+      <li>ө/о, ү/у, и/й/ь/ъ, ш/щ зэрэг давхар утгатай үсгүүдийг нөхцөл байдлаас таамагладаг — үргэлж зөв байх баталгаагүй.</li>
+      <li>Англи үгсийг өөрчлөхгүй үлдээхийг оролддог ч заримдаа кирилл болгож болно. Хүний нэр, газрын нэр, том үсэг алдаатай байж болно.</li>
+      <li>Чухал текстийг заавал өөрөө шалгаарай.</li>
+    </ul>
+  </details>
+</main>
+
+<script>
+// Search examples also run the Wikipedia comparison.
+const EXAMPLES = [
+  {label: "Өдөр тутмын", search: false, texts: [
+    "za bi margaash ugluu irne", "margaash hed tsagt uulzah ve", "unuudur ih zavgui bailaa, daraa yariya"]},
+  {label: "Онцлог үсэг", search: false, texts: ["hvvhdvvd surguulidaa yavsan uu", "bi tand hairtai shuu ❤"]},
+  {label: "Холимог", search: false, texts: ["ene kino үнэхээр goy bna"]},  // the Cyrillic word stays as typed
+  {label: "Хайлт", search: true, texts: ["chingis haan hezee torson be", "ulaanbaatar hotiin hun am hed ve"]},
+];
+const $ = (id) => document.getElementById(id);
+const inp = $("inp"), go = $("go");
+
+for (const g of EXAMPLES) {
+  const row = document.createElement("div");
+  row.className = "group";
+  const label = document.createElement("span");
+  label.className = "label";
+  label.textContent = g.label;
+  row.appendChild(label);
+  for (const ex of g.texts) {
+    const b = document.createElement("button");
+    b.textContent = ex;
+    if (g.search) b.className = "search";
+    b.onclick = () => { inp.value = ex; run(); if (g.search && !$("search-card").hidden) runSearch(); };
+    row.appendChild(b);
+  }
+  $("examples").appendChild(row);
+}
+
+// Mark model words the rule baseline does not have (blue) and Latin words left as written (orange).
+// Words where another beam candidate differs become a <select> so the reader can pick the right one.
+const norm = (w) => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+let last = null;  // last /transliterate response, for feedback
+function render(d) {
+  const base = new Set(d.baseline.split(/\s+/).map(norm));
+  const alts = new Map((d.alternatives || []).map((a) => [a.index, a.options]));
+  const frag = document.createDocumentFragment();
+  d.model.split(/\s+/).forEach((tok, i) => {
+    if (i) frag.append(" ");
+    if (alts.has(i)) {
+      const sel = document.createElement("select");
+      sel.className = "altword";
+      sel.title = "Өөр хувилбар сонгох";
+      for (const o of [tok, ...alts.get(i)]) {
+        const op = document.createElement("option");
+        op.value = o; op.textContent = o;
+        sel.appendChild(op);
+      }
+      sel.onchange = sendFeedback;
+      frag.append(sel);
+      return;
+    }
+    const cls = /[A-Za-z]/.test(tok) ? "kept" : base.has(norm(tok)) ? null : "fix";
+    if (!cls) { frag.append(tok); return; }
+    const s = document.createElement("span");
+    s.className = cls;
+    s.textContent = tok;
+    frag.append(s);
+  });
+  return frag;
+}
+
+// The text as currently shown, with the reader's choices applied.
+function currentText() {
+  return Array.from($("model-out").childNodes)
+    .map((n) => n.tagName === "SELECT" ? n.value : n.textContent).join("");
+}
+
+function sendFeedback() {
+  if (!last) return;
+  fetch("feedback", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({src: last.src, model: last.model, chosen: currentText()}),
+  }).catch(() => {});
+}
+
+function showCandidates(d) {
+  const box = $("cands");
+  box.replaceChildren();
+  const cands = (d.candidates || []).filter((c) => c.text !== d.model);
+  box.hidden = !cands.length;
+  if (!cands.length) return;
+  box.append("Бусад хувилбар: ");
+  cands.forEach((c, k) => {
+    if (k) box.append(" · ");
+    const s = document.createElement("span");
+    s.textContent = `${c.text} (${Math.round(c.prob * 100)}%)`;
+    s.onclick = () => {  // apply this candidate's words to the selects where possible
+      const words = c.text.split(/\s+/);
+      let i = 0;
+      for (const n of $("model-out").childNodes) {
+        if (n.nodeType === 3 && !n.textContent.trim()) continue;
+        if (n.tagName === "SELECT" && [...n.options].some((o) => o.value === words[i])) n.value = words[i];
+        i++;
+      }
+      sendFeedback();
+    };
+    box.append(s);
+  });
+}
+
+async function run() {
+  const text = inp.value.trim();
+  if (!text) return;
+  go.disabled = true;
+  $("model-out").textContent = "…";
+  $("base-out").textContent = "…";
+  try {
+    const r = await fetch("transliterate", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text}),
+    });
+    if (!r.ok) throw new Error((await r.json()).detail || r.status);
+    const d = await r.json();
+    $("base-out").textContent = d.baseline;
+    if (d.model === null) {
+      $("model-out").innerHTML = '<span class="error">Загвар ачаалагдаагүй байна (зөвхөн дүрэмд суурилсан үр дүн).</span>';
+    } else {
+      last = {src: text, model: d.model};
+      $("model-out").replaceChildren(render(d));
+      showCandidates(d);
+      $("legend").hidden = false;
+      if (d.model_name) $("model-name").textContent = d.model_name;
+    }
+    $("time").textContent = `${d.elapsed_ms} мс`;
+  } catch (e) {
+    const span = document.createElement("span");
+    span.className = "error";
+    span.textContent = `Алдаа гарлаа: ${String(e.message || e)}`;
+    $("model-out").replaceChildren(span);
+    $("base-out").textContent = "";
+  } finally {
+    go.disabled = false;
+  }
+}
+
+function fillHits(listId, hits) {
+  const ol = $(listId);
+  ol.replaceChildren();
+  if (!hits.length) {
+    const li = document.createElement("li");
+    li.textContent = "Юу ч олдсонгүй";
+    ol.appendChild(li);
+  }
+  for (const h of hits) {
+    const li = document.createElement("li");
+    const b = document.createElement("b");
+    b.textContent = h.title;
+    const s = document.createElement("span");
+    s.textContent = h.text.length > 160 ? h.text.slice(0, 160) + "…" : h.text;
+    li.append(b, s);
+    ol.appendChild(li);
+  }
+}
+
+async function runSearch() {
+  const text = inp.value.trim();
+  if (!text) return;
+  $("search-go").disabled = true;
+  try {
+    const r = await fetch("search", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text}),
+    });
+    if (!r.ok) throw new Error((await r.json()).detail || r.status);
+    const d = await r.json();
+    $("latin-q").textContent = `«${d.query}»`;
+    $("cyr-q").textContent = `«${d.converted}»`;
+    fillHits("latin-hits", d.latin_hits);
+    fillHits("cyr-hits", d.converted_hits);
+    $("search-out").hidden = false;
+    $("search-time").textContent = `${d.elapsed_ms} мс`;
+  } catch (e) {
+    $("search-time").textContent = `Алдаа гарлаа: ${String(e.message || e)}`;
+  } finally {
+    $("search-go").disabled = false;
+  }
+}
+
+fetch("health").then((r) => r.json()).then((d) => { $("search-card").hidden = !d.search_loaded; }).catch(() => {});
+$("search-go").onclick = () => { run(); runSearch(); };
+go.onclick = run;
+inp.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) run(); });
+document.querySelectorAll(".copy").forEach((b) => {
+  b.onclick = async () => {
+    const text = b.dataset.target === "model-out" ? currentText() : $(b.dataset.target).textContent;
+    try { await navigator.clipboard.writeText(text);
+          b.textContent = "Хуулсан"; setTimeout(() => (b.textContent = "Хуулах"), 1200); } catch {}
+  };
+});
+</script>
+</body>
+</html>

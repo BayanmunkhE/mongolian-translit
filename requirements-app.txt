@@ -1,0 +1,10 @@
+# Web demo (CPU inference). Install CPU-only torch first to keep it small:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+fastapi>=0.110
+uvicorn[standard]>=0.29
+transformers>=4.46
+huggingface_hub
+torch>=2.1
+numpy
+bm25s>=0.2                 # Wikipedia search (optional: the app runs without data/rag/)
+sentence-transformers>=3.0

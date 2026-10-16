@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Generated data (re-create with generate_pairs.py / tools/chat_data.py). Hand-made files ARE tracked:
+data/*.jsonl
+!data/real_test.jsonl
+!data/real_dev.jsonl
+!data/real_train.jsonl
+!data/chat_test.jsonl
+data/generation_stats.json
+data/v*/
+data/rag/
+data/chat/
+data/real_test_todo.csv
+real_test_todo.csv
+data/*.bak
+# Annotation work area: raw scraped comments + SQLite DBs (finished items go into real_*.jsonl)
+data/raw/
+!data/raw/dummy_chat_*.json
+data/*.db
+
+# Models / checkpoints / outputs (too big for git — use Drive or the HF Hub)
+models/
+checkpoints/
+results/pred_*.csv
+results/**/pred_*.csv
+results/*.log
+results/**/*.log
+results/llm/cache.jsonl
+results/phone/*.pt
+results/public_demo/
+wandb/
+runs/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+.ipynb_checkpoints/
+data/feedback/
+data/keyboard/
+keyboard/android/app/src/main/assets/
+keyboard/android/.gradle/
+keyboard/android/**/build/
+keyboard/android/local.properties
