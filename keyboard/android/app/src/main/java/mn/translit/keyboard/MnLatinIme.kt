@@ -30,6 +30,7 @@ class MnLatinIme : InputMethodService() {
     private var request = 0
     /** The last two committed Latin words: context for the model (cleared by punctuation and Enter). */
     private val recentLatin = ArrayDeque<String>()
+    private var lastCyrillic: String? = null  // the previous committed word, for bigram ranking of the dictionary
 
     override fun onCreate() {
         super.onCreate()
@@ -80,7 +81,7 @@ class MnLatinIme : InputMethodService() {
         if (latin.isEmpty()) { showSuggestions(emptyList()); return }
         val id = ++request
         val prefix = recentLatin.toList()
-        val fromDict = dict.lookup(latin)
+        val fromDict = dict.lookup(latin, lastCyrillic)
         // a user pick or a dictionary hit answers at once; the model refines it with context when there is any
         if (fromDict != null) showSuggestions(fromDict.words + latin) else showSuggestions(listOf(latin))
         if (fromDict != null && prefix.isEmpty()) return
@@ -129,7 +130,8 @@ class MnLatinIme : InputMethodService() {
         if (index > 0 && latin.isNotEmpty()) dict.remember(latin, word)
         currentInputConnection?.commitText(word + suffix, 1)
         if (latin.isNotEmpty()) { recentLatin.addLast(latin); while (recentLatin.size > 2) recentLatin.removeFirst() }
-        if (suffix.trim().isNotEmpty()) recentLatin.clear()  // punctuation ends the context window
+        lastCyrillic = word
+        if (suffix.trim().isNotEmpty()) { recentLatin.clear(); lastCyrillic = null }  // punctuation ends the context window
         composing.setLength(0)
         showSuggestions(emptyList())
     }

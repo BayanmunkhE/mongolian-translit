@@ -29,8 +29,22 @@ notebooks/train_byt5.ipynb   Colab T4 notebook: data → train → evaluate → 
 eval/metrics.py              CER, WER, exact match, ambiguous-letter accuracy, English preservation
 eval/evaluate.py             all systems × (synthetic test, real test) → markdown table + CSV
 eval/error_analysis.py       most frequent error types of one system
-app/                         FastAPI backend + Mongolian web UI
-Dockerfile, deploy/          CPU container for Hugging Face Spaces
+app/                         FastAPI backend + Mongolian web UI (n-best candidates, per-word alternatives, /feedback)
+translit/candidates.py       n-best / per-word alternatives for the UI; translit/onnx_backend.py torch-free tagger backend
+tools/chat_data.py           chat-style stage-3 data (hand seeds -> Gemma expansion -> Latin variants)
+tools/prune_model.py         structured pruning of byt5-small for on-device use (4 enc + 2 dec blocks, d_ff 1024)
+tools/export_onnx.py         seq2seq -> ONNX int8 (encoder + decoder); tools/phone_bench.py latency per word
+tools/tagger_data.py         byte -> output-string labels for the encoder-only tagger; train/train_tagger.py trains it
+tools/export_tagger_onnx.py  tagger -> ONNX int8 (argmax in graph) + CER/latency check
+tools/context_eval.py        word accuracy with 0/1/2 previous words of context (keyboard setting)
+tools/word_dict.py           keyboard dictionary (50k Latin words -> top-3 Cyrillic); tools/word_bigrams.py next-word counts
+tools/pack_keyboard_assets.py copies ONNX models + dictionary + bigrams into keyboard/android/.../assets
+keyboard/android/            Android IME prototype (Kotlin, onnxruntime-android): pinyin-style suggestion strip
+tools/xai_attention.py       cross-attention heat maps for the XAI slide
+rag/, eval/retrieval_eval.py Mongolian Wikipedia knowledge base; retrieval with Latin vs converted queries
+annotate/                    annotation UI for real-test candidates (FastAPI + SQLite)
+Dockerfile, deploy/          CPU containers: full torch app, and deploy/onnx.Dockerfile (torch-free, ~300 MB)
+.github/workflows/tests.yml  pytest on every push
 tests/                       pytest for everything that doesn't need torch
 ```
 
@@ -47,7 +61,8 @@ pytest -q
 ```
 
 Data, models and results are git-ignored and get re-created by the scripts. The only
-data files in git are `data/seed_conversational.txt` and `data/real_test.jsonl`. Put
+data files in git are the hand-made ones: `data/seed_conversational.txt`, `data/chat_seed*_cyr.txt`,
+`data/real_{train,dev,test}.jsonl`, `data/chat_test.jsonl` and `data/raw/dummy_chat_*.json`. Put
 models on Google Drive or the Hugging Face Hub.
 
 ## 1. Data
@@ -110,6 +125,16 @@ early stopping on valid CER (patience 4), best checkpoint kept, seed 42.
 Precision: **bf16** on Ampere or newer GPUs and **fp32 on T4**, because T5-family models
 overflow to NaN in fp16 (`--fp16` forces it anyway). For comparison: `--model google/mt5-small`.
 
+The final model is trained in three stages, each continuing from the previous one:
+
+1. **synthetic** (1M pairs from Wikipedia) → `byt5-mn`;
+2. **real_train × 20 + 10k synthetic** (hand-corrected chat messages, see `data/real_train.jsonl`) → `byt5-small-v4-real`;
+3. **chat mix**: `tools/chat_data.py expand` turns the hand-written seeds `data/chat_seed_cyr.txt` /
+   `chat_seed2_cyr.txt` into ~2.6k chat sentences with a local open model (Gemma 3 via Ollama), `pairs` makes 6
+   Latin variants per sentence (abbreviations, split suffixes, particles), `mix` joins them with real_train × 20
+   and 10k synthetic → `byt5-small-chat2` (demo default). `data/chat_test.jsonl` (40 dummy chat messages) is
+   evaluation-only and is dropped from the pairs.
+
 ## 4. Evaluation
 
 ```bash
@@ -123,14 +148,21 @@ letters (ө/о, ү/у, х, и/й/ь/ъ, ш/щ, found through character alignment
 English/Latin words preserved. Outputs: `results/results.md`, `results/metrics.json`,
 `results/pred_*.csv` (per-example predictions and CER for every system).
 
+Additional metrics: chrF and BLEU (sacrebleu), and `tools/context_eval.py` reports word accuracy when the
+word is converted alone vs. with its 1–2 previous words (the keyboard setting: 75% → 87% with context).
+
 ## 5. Web demo
 
 ```bash
-uvicorn app.main:app --port 7860     # loads models/byt5-small-v4-real (else byt5-mn); MODEL_DIR=... overrides
+uvicorn app.main:app --port 7860     # loads models/byt5-small-chat2 (else older ones); MODEL_DIR=... overrides
 # open http://localhost:7860
+MODEL_BACKEND=onnx-tagger MODEL_DIR=models/onnx/tagger-4e-full uvicorn app.main:app   # torch-free, ~2 ms/message
 ```
 
-`POST /transliterate {"text": "..."}` → `{"model": "...", "baseline": "...", ...}`.
+`POST /transliterate {"text": "..."}` → `{"model": "...", "baseline": "...", "candidates": [...], "alternatives": [...]}`:
+the model answer, up to 3 whole-sentence candidates with their probabilities (beam n-best, casing-merged), and
+per-word alternatives the UI shows as drop-downs. `POST /feedback` logs the user's pick to
+`data/feedback/choices.jsonl` (never used for training automatically).
 `POST /search {"text": "..."}` searches Mongolian Wikipedia with the raw Latin text and with its conversion
 (needs `data/rag/` from `rag/corpus.py`; the first start downloads the e5 model, ~1 GB, once;
 `RAG_RETRIEVER=bm25` works offline). Inference runs on CPU. Without a model the app serves the baseline only.
@@ -147,10 +179,45 @@ pytest -q && uvicorn app.main:app --port 7860  # then open http://localhost:7860
 
 Start it once at home with internet before presenting, so the e5 model is cached.
 
-**Hugging Face Spaces:** upload the model to the Hub (last cells of the notebook), then
-create a Docker Space and push `Dockerfile`, `requirements-app.txt`, `app/`, `baselines/`
-and `translit/`. Use `deploy/hf_space_README.md` as the Space's `README.md`, and set the Space
-variable `MODEL_ID=<user>/<model-repo>`.
+**Hosting options** (free Spaces need a PRO account as of 2026-10; a quick Cloudflare tunnel,
+`tools/start_public_demo.ps1`, serves the local app for a presentation):
+
+* `Dockerfile` — full app with torch and `byt5-small-chat2` (~2 GB image, beam search, n-best).
+* `deploy/onnx.Dockerfile` — `MODEL_BACKEND=onnx-tagger`: onnxruntime only, ~300 MB image, runs on the
+  smallest free tiers (Render, Cloud Run, Fly). Slightly lower accuracy (tagger, no beam search).
+* `gradio_app.py` + `tools/push_space.py` — Gradio Space (`deploy/hf_space_README.md`, `deploy/space_requirements.txt`).
+
+## 6. On-device: pruning, ONNX and the keyboard
+
+A ByT5 trained from scratch at phone size did not learn (see PROGRESS.md), so the on-device models are
+**pruned** from the fine-tuned byt5-small instead:
+
+```bash
+python tools/prune_model.py --teacher models/byt5-small-chat --enc-layers 0,3,7,11 --dec-layers 0,2 --d-ff 1024 --out models/byt5-pruned-4e2d-1024
+python train/train_byt5.py --model models/byt5-pruned-4e2d-1024 --train data/student_train.jsonl ... --out models/byt5-pruned-4e2d-1024-ft2
+python tools/export_onnx.py --model models/byt5-pruned-4e2d-1024-ft2 --out models/onnx/pruned-4e2d-1024-ft2 --check   # int8: 28 + 20 MB
+python tools/phone_bench.py --model models/byt5-pruned-4e2d-1024-ft2                                                  # ms per word, p50/p95/p99
+```
+
+For the keyboard the seq2seq decoder is still the slow part, so a second model converts in **one pass**:
+an **encoder-only tagger** that labels every input byte with the output string it becomes
+(edit-alignment labels, 4000-label vocabulary):
+
+```bash
+python tools/tagger_data.py --max-train 1100000 --vocab 4000                 # data/tagger_full/
+python train/train_tagger.py --encoder models/byt5-pruned-4e2d-1024-ft2 --train data/tagger_full/train.jsonl \
+    --valid data/tagger_full/valid.jsonl --vocab data/tagger_full/vocab.json --out models/tagger-4e-full --steps 40000
+python tools/export_tagger_onnx.py --model models/tagger-4e-full --out models/onnx/tagger-4e-full --check   # int8 34 MB, ~1 ms/message
+python tools/context_eval.py --onnx-tagger models/onnx/tagger-4e-full
+python tools/word_dict.py && python tools/word_bigrams.py                    # data/keyboard/{word_dict,bigrams}.json
+python tools/pack_keyboard_assets.py --tagger models/onnx/tagger-4e-full     # -> keyboard/android/app/src/main/assets
+```
+
+The Android IME (`keyboard/android/`, open in Android Studio) works like a pinyin keyboard: the user types
+Latin, the strip shows Cyrillic candidates, space commits the first one. Lookup order: the user's own past
+picks → packed dictionary (30k words, re-ranked by the previous committed word's bigram counts) → tagger with
+the 2 previous words as context → seq2seq model only when the tagger meets a byte it has no label for. The
+raw Latin is always the last candidate, so English stays English.
 
 ## Git: Windows ↔ MacBook
 
@@ -164,7 +231,8 @@ git branch -M main && git push -u origin main
 git clone https://github.com/<you>/mn-translit.git
 ```
 
-`.gitattributes` keeps line endings as LF on both machines.
+`.gitattributes` keeps line endings as LF on both machines. `.github/workflows/tests.yml` runs `pytest -q`
+(no torch) on every push.
 
 ## Limitations
 

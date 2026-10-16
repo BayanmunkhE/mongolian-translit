@@ -31,6 +31,9 @@ def main(argv=None):
     top = sorted(full.items(), key=lambda kv: -kv[1]["count"])[:args.keep]
     slim = {w: {"candidates": v["candidates"]} for w, v in top}
     (ASSETS / "word_dict.json").write_text(json.dumps(slim, ensure_ascii=False), encoding="utf-8")
+    bigrams = ROOT / "data" / "keyboard" / "bigrams.json"
+    if bigrams.exists():  # tools/word_bigrams.py: previous word -> next-word counts for ranking
+        shutil.copy(bigrams, ASSETS / "bigrams.json")
     for p in sorted(ASSETS.iterdir()):
         print(f"{p.name}: {p.stat().st_size / 2**20:.1f} MB")
 

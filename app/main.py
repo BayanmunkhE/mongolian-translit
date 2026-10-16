@@ -63,11 +63,17 @@ def load_model():
         log.warning("No MODEL_DIR / MODEL_ID set: serving baseline only.")
         return
     try:
-        from translit.model import Seq2SeqTransliterator
-        model = Seq2SeqTransliterator(source, device=os.getenv("MODEL_DEVICE", "cpu"),
-                                      num_beams=int(os.getenv("NUM_BEAMS", "4")),
-                                      cpu_threads=int(os.getenv("CPU_THREADS", "0")) or None)
-        model_name = os.getenv("MODEL_LABEL", f"ByT5-small ({Path(source).name})")
+        if os.getenv("MODEL_BACKEND", "torch") == "onnx-tagger":
+            # torch-free: the exported tagger (34 MB int8, ~2 ms per message) for small hosts
+            from translit.onnx_backend import OnnxTaggerTransliterator
+            model = OnnxTaggerTransliterator(source, threads=int(os.getenv("CPU_THREADS", "2")))
+            model_name = os.getenv("MODEL_LABEL", f"ByT5 tagger ({Path(source).name}, ONNX int8)")
+        else:
+            from translit.model import Seq2SeqTransliterator
+            model = Seq2SeqTransliterator(source, device=os.getenv("MODEL_DEVICE", "cpu"),
+                                          num_beams=int(os.getenv("NUM_BEAMS", "4")),
+                                          cpu_threads=int(os.getenv("CPU_THREADS", "0")) or None)
+            model_name = os.getenv("MODEL_LABEL", f"ByT5-small ({Path(source).name})")
         model("sain baina uu")  # warm-up
         log.info("Loaded model from %s", source)
     except Exception as e:  # keep the demo up even if the model fails to load

@@ -49,9 +49,21 @@ def main(argv=None):
     ap.add_argument("--model", default="models/byt5-pruned-4e2d-1024-ft2")
     ap.add_argument("--sets", nargs="*", default=["chat_test=data/chat_test.jsonl", "real_test=data/real_test.jsonl"])
     ap.add_argument("--context", type=int, default=2)
+    ap.add_argument("--onnx-tagger", help="use an exported tagger (models/onnx/<name>) instead of --model")
     args = ap.parse_args(argv)
-    tr = Seq2SeqTransliterator(args.model, num_beams=1)
-    conv = tr.transliterate
+    if args.onnx_tagger:
+        from tools.export_tagger_onnx import OnnxTagger
+        tg = OnnxTagger(ROOT / args.onnx_tagger, int8=True)
+        cache = {}
+
+        def conv(text):
+            if text not in cache:
+                cache[text] = tg(text)
+            return cache[text]
+        args.model = args.onnx_tagger
+    else:
+        tr = Seq2SeqTransliterator(args.model, num_beams=1)
+        conv = tr.transliterate
     lines = [f"# Context vs standalone word conversion: {args.model}", ""]
     for spec in args.sets:
         name, path = spec.split("=", 1)
@@ -83,7 +95,7 @@ def main(argv=None):
                   f"- both wrong: {100 * both_wrong / n:.1f}%", "", "Fixed by context:", *[f"- {x}" for x in fixes], "",
                   "Broken by context:", *[f"- {x}" for x in breaks], ""]
         print("\n".join(lines[-14:]), flush=True)
-    out = ROOT / "results" / "keyboard" / "context_eval.md"
+    out = ROOT / "results" / "keyboard" / f"context_eval_{Path(args.model).name}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {out}")

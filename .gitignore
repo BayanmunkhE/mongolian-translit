@@ -46,6 +46,7 @@ desktop.ini
 .ipynb_checkpoints/
 data/feedback/
 data/keyboard/
+data/tagger*/
 keyboard/android/app/src/main/assets/
 keyboard/android/.gradle/
 keyboard/android/**/build/
