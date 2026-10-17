@@ -163,6 +163,12 @@ MODEL_BACKEND=onnx-tagger MODEL_DIR=models/onnx/tagger-4e-full uvicorn app.main:
 the model answer, up to 3 whole-sentence candidates with their probabilities (beam n-best, casing-merged), and
 per-word alternatives the UI shows as drop-downs. `POST /feedback` logs the user's pick to
 `data/feedback/choices.jsonl` (never used for training automatically).
+
+**Keyboard mode** (`/keyboard`, works on any phone browser, iPhone included): a pinyin-style strip for the word
+being typed. `POST /suggest {"word", "context": [prev Latin words], "prev_cyr"}` returns candidates from the
+dictionary (re-ranked by bigrams), the context-aware ONNX tagger (`KEYBOARD_TAGGER`, default the best of
+`models/onnx/lstm-tagger-512x3-ft`, `tagger-4e-full`, …) and the raw Latin last; picks that were not the first
+suggestion are remembered in the browser (`localStorage`). Logic in `translit/keyboard.py`.
 `POST /search {"text": "..."}` searches Mongolian Wikipedia with the raw Latin text and with its conversion
 (needs `data/rag/` from `rag/corpus.py`; the first start downloads the e5 model, ~1 GB, once;
 `RAG_RETRIEVER=bm25` works offline). Inference runs on CPU. Without a model the app serves the baseline only.

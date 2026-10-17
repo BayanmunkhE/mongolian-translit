@@ -163,9 +163,23 @@ Tick boxes as you go (`[x]`). GitHub and VS Code's Markdown preview render this 
   - **Continued 30k steps at lr 5e-4 (`--init`, `models/lstm-tagger-512x3-ft`, 1.8 h):** dev-mix CER **4.30**
     (from 4.54), real test 7.91 (tie), chat **5.59** / EM 67.5. Picked on dev as the rules say, so it is the
     keyboard default now (ONNX int8 19.3 MB, same latency; numbers in `results/phone/bench_lstm-tagger-512x3-ft_onnx.md`).
+    (A further +40k at lr 3e-4, `models/lstm-tagger-512x3-ft2`, ran overnight 2026-10-18; see the table.)
     Dev is still creeping down, so more steps / more data (the full 1M synthetic is already in) are the next lever;
     the real-test plateau at ~7.9 suggests the remaining errors are label/reference ambiguities (ө/у, suffix
     conventions), not capacity.
+- **Night 2026-10-18 (user has no Android phone; defense on Tuesday 2026-10-20):**
+  - **Web keyboard mode** (`/keyboard`, `app/static/keyboard.html`, `translit/keyboard.py`, `POST /suggest`): the
+    pinyin-style strip in the browser so the UX can be shown on an iPhone; dictionary + bigrams + context-aware
+    ONNX tagger (2 ms) + raw Latin; own picks kept in localStorage. Linked from the demo page.
+  - **Android build without Android Studio:** portable JDK 17 (Temurin), Gradle 8.9 and the SDK command-line tools
+    under `C:\Users\zyota\tools\` (not in git; `keyboard/android/local.properties` points at the SDK).
+    **`gradle assembleDebug` builds (1m41s, app-debug.apk 146 MB: 90 MB assets + onnxruntime for 4 ABIs), the
+    Pixel 6 / API 34 x86_64 AVD `kb34` boots with WHPX, and the IME works end to end** (installed, selected,
+    typed "margaash" + space + "ulzy" in Chrome's address bar via adb taps: strip `маргааш · маргаашь · margaash`,
+    then `уулзъя`; screenshots `results/keyboard/emulator_ime*.png`). `tools/start_emulator.ps1` reproduces it
+    with a window for the projector. The emulator is stopped after the test.
+  - Deck v28: appendix Н6 "six frequent questions" (BiLSTM vs pretrained, test size, leakage, LLM, from-scratch,
+    iOS); slide 22 now shows the emulator screenshot.
 - **Demo: n-best word choice (2026-10-15).** `/transliterate` returns `candidates` (beam n-best, casing-only
   duplicates merged, real-odds softmax) and `alternatives` (word positions where candidates differ,
   `translit/candidates.py`); the page renders those words as a dropdown and POSTs the reader's pick to
