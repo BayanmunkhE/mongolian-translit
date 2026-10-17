@@ -27,7 +27,8 @@ python tools/xai_attention.py --text "za bi margaash ugluu irne" --errors result
 python tools/tagger_data.py && python train/train_tagger.py && python tools/export_tagger_onnx.py --check  # encoder-only tagger
 python train/train_lstm_tagger.py && python tools/export_tagger_onnx.py --lstm --model models/lstm-tagger --out models/onnx/lstm-tagger --check  # BiLSTM tagger: 8.5 MB int8, beats the ByT5 tagger
 MODEL_BACKEND=onnx-tagger MODEL_DIR=models/onnx/tagger-4e-full uvicorn app.main:app   # torch-free serving (deploy/onnx.Dockerfile)
-MODEL_DIR=models/byt5-mn uvicorn app.main:app --port 7860
+MODEL_DIR=models/byt5-mn uvicorn app.main:app --port 7860   # /keyboard = web keyboard mode (POST /suggest)
+powershell -File tools/start_emulator.ps1               # Android emulator with the IME installed (portable JDK/Gradle/SDK in ~/tools)
 python tools/youtube_comments.py && python annotate/db.py load data/raw/youtube_candidates.jsonl
 uvicorn annotate.main:app --port 8000                  # or: docker compose up annotate
 python annotate/db.py export && python tools/real_test.py import data/real_test_todo.csv

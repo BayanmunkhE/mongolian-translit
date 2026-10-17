@@ -29,7 +29,8 @@ word). The raw Latin word is always the last candidate, so English words and nam
    (`sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"`), `local.properties` with
    `sdk.dir=<sdk>`, then `gradle assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`; install with
    `adb install -r`, enable with `adb shell ime enable mn.translit.keyboard/.MnLatinIme` and
-   `adb shell ime set mn.translit.keyboard/.MnLatinIme`.
+   `adb shell ime set mn.translit.keyboard/.MnLatinIme`. `tools/start_emulator.ps1` does all of that on the
+   Pixel 6 / API 34 emulator (verified 2026-10-18, screenshots in `results/keyboard/`).
 3. On the phone: Settings → System → Languages & input → On-screen keyboard → Manage → enable
    "Монгол латин гар", then pick it from the keyboard switcher in any text field.
 
