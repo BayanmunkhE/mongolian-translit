@@ -48,6 +48,7 @@ DEFAULT_MODELS = ("byt5-small-chat2", "byt5-small-chat", "byt5-small-v4-real", "
 async def lifespan(_app):
     load_model()
     load_retriever()
+    load_keyboard()
     yield
 
 
@@ -198,6 +199,53 @@ def search(req: Request, k: int = 3):
                           elapsed_ms=round(1000 * (time.perf_counter() - t0), 1))
 
 
+keyboard = None  # translit.keyboard.KeyboardSuggester, loaded on first /suggest
+KEYBOARD_TAGGERS = ("lstm-tagger-512x3-ft", "lstm-tagger-512x3", "tagger-4e-full", "tagger-4e")
+
+
+def load_keyboard():
+    """Dictionary + bigrams + the ONNX tagger for the web keyboard mode (falls back to the dictionary alone)."""
+    global keyboard
+    if keyboard is not None:
+        return keyboard
+    from translit.keyboard import KeyboardSuggester
+    tagger = os.getenv("KEYBOARD_TAGGER") or next(
+        (str(ROOT / "models" / "onnx" / t) for t in KEYBOARD_TAGGERS if (ROOT / "models" / "onnx" / t).exists()), None)
+    seq2seq = model if (model is not None and not hasattr(model, "sess")) else None  # only the torch seq2seq
+    try:
+        keyboard = KeyboardSuggester(tagger_dir=tagger, seq2seq=seq2seq)
+        log.info("Keyboard mode: tagger=%s dict=%d words bigrams=%d", keyboard.tagger_name, len(keyboard.dict),
+                 len(keyboard.bigrams))
+    except Exception as e:  # the main demo must not depend on the keyboard assets
+        log.exception("Keyboard load failed (%s)", e)
+        keyboard = KeyboardSuggester(tagger_dir=None)
+    return keyboard
+
+
+class SuggestRequest(BaseModel):
+    word: str = Field(..., max_length=64)
+    context: list[str] = Field(default_factory=list)  # previous Latin words (at most 2 are used)
+    prev_cyr: str | None = Field(default=None, max_length=64)  # previous committed Cyrillic word
+
+
+class SuggestResponse(BaseModel):
+    candidates: list[str]  # best first; the typed Latin is always last
+    source: str | None
+    tagger: str | None
+    elapsed_ms: float
+
+
+@app.post("/suggest", response_model=SuggestResponse)
+def suggest(req: SuggestRequest):
+    """Per-word candidates for the keyboard mode (dictionary + bigrams + context-aware tagger)."""
+    ks = load_keyboard()
+    t0 = time.perf_counter()
+    with compute_lock:
+        res = ks.suggest(req.word, req.context, req.prev_cyr)
+    return SuggestResponse(candidates=res["candidates"], source=res["source"], tagger=ks.tagger_name,
+                           elapsed_ms=round(1000 * (time.perf_counter() - t0), 1))
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "model_loaded": model is not None, "search_loaded": retriever is not None}
@@ -206,3 +254,8 @@ def health():
 @app.get("/")
 def index():
     return FileResponse(STATIC / "index.html")
+
+
+@app.get("/keyboard")
+def keyboard_page():
+    return FileResponse(STATIC / "keyboard.html")
