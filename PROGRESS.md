@@ -129,6 +129,24 @@ Tick boxes as you go (`[x]`). GitHub and VS Code's Markdown preview render this 
     it more steps / the full 1M rows (it was trained on 400k), and use it as the keyboard's primary model with the
     seq2seq only for UNK labels.
     Broken dirs: `byt5-student-30m`, `-copy`, `-30m-v2`, `-30m-v3`, `-30m-v4` (deletable, ~0.5 GB each).
+- **Overnight 2026-10-17 (`results/queue_tagger.py`, user asleep until 15:00):**
+  - **Tagger on the full gold mix (`models/tagger-4e-full`, 1.05M rows, 40k steps, best step 34k, 54 min):**
+    dev-mix CER **5.74** (400k-row tagger-4e: 6.52; pruned seq2seq 5.6). ONNX int8 (33.8 MB): real test
+    **8.77** / EM 22.6 (tagger-4e 9.18), chat test **6.58** / EM 62.5 (8.44 / 45.0), still 2 ms/message and
+    0.5 ms/word. With 2 previous words of context: word accuracy 83.6 → **87.0%** real, 82.0 → 86.1% chat
+    (`results/keyboard/context_eval_tagger-4e-full.md`). Keyboard assets repacked with it (default of
+    `pack_keyboard_assets.py`). Context still breaks laughter tokens (hha, hhe, haha) and `duu`→дөө: a repeat
+    guard / dictionary hit covers those.
+  - **Torch-free serving:** `translit/onnx_backend.py` + `MODEL_BACKEND=onnx-tagger` in the app, `deploy/onnx.Dockerfile`
+    (onnxruntime only, ~300 MB image) — fits free hosting tiers where the 2 GB torch image does not.
+  - **Keyboard bigrams:** `tools/word_bigrams.py` → `data/keyboard/bigrams.json` (37,936 previous words, 3.7 MB);
+    `WordDictionary.kt` re-ranks dictionary candidates by the previous committed word; `MnLatinIme` passes it.
+  - **Git hygiene:** `data/tagger/` (153 MB, generated) had been committed in 976938a; untracked in a8a7957 and
+    ignored (`data/tagger*/`). The blob is still in history, so before the first GitHub push (100 MB limit) squash
+    or rewrite those two commits (no remote yet, nothing pushed).
+  - **LSTM baseline (rubric: TF-IDF / LSTM / Transformer):** `train/train_lstm_tagger.py`, a byte-level 2-layer
+    BiLSTM tagger (8.7M params, no pretraining) on the same labels; queued after the tagger (`results/queue_lstm.py`).
+    Result below in the methods table (#11) once it finishes.
 - **Demo: n-best word choice (2026-10-15).** `/transliterate` returns `candidates` (beam n-best, casing-only
   duplicates merged, real-odds softmax) and `alternatives` (word positions where candidates differ,
   `translit/candidates.py`); the page renders those words as a dropdown and POSTs the reader's pick to
@@ -264,4 +282,6 @@ results log above.
 | 7 | mT5-small | subword tokenizer instead of bytes (shorter sequences, faster) | ~2 h | todo | | | |
 | 8 | ByT5-small from scratch | same architecture, random weights; shows what pretraining adds | 2 × 1 h | done: does not converge in 7k steps (with or without warmup) | 100 | 0 | 100+ (valid) |
 | 9 | Two-stage: synthetic → real | fine-tune the best model on 300–500 hand-annotated comments from *new* videos (never the test set) | minutes + annotation time | needs data | | | |
-| 10 | LLM baseline (zero/few-shot) | ask a general LLM to convert; strong reference point | – (API cost) | needs API key | | | |
+| 10 | LLM baseline (zero/few-shot) | ask a general LLM to convert; strong reference point | – (API cost) | done with Gemma 3 12B (local): zero 18.14 / random-5 16.88 / retrieved-5 12.49 | 12.49 | 16.41 | – |
+| 11 | BiLSTM tagger (no pretraining) | byte → output-string labels, 2-layer BiLSTM 8.7M params (`train/train_lstm_tagger.py`) | 15 min | running 2026-10-17 | | | |
+| 12 | ByT5 encoder tagger (pruned, pretrained) | same labels, 4-block pruned encoder 27.7M (`train/train_tagger.py`) | 1 h | done: int8 ONNX 34 MB, 2 ms/message | 8.77 | 22.6 | dev-mix 5.74 |

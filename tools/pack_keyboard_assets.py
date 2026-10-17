@@ -17,7 +17,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--onnx", default="models/onnx/pruned-4e2d-1024-ft2")
     ap.add_argument("--dict", default="data/keyboard/word_dict.json")
-    ap.add_argument("--tagger", default="models/onnx/tagger-4e")
+    ap.add_argument("--tagger", default="models/onnx/tagger-4e-full")
     ap.add_argument("--keep", type=int, default=30000)
     args = ap.parse_args(argv)
     ASSETS.mkdir(parents=True, exist_ok=True)

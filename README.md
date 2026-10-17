@@ -209,6 +209,7 @@ python train/train_tagger.py --encoder models/byt5-pruned-4e2d-1024-ft2 --train 
     --valid data/tagger_full/valid.jsonl --vocab data/tagger_full/vocab.json --out models/tagger-4e-full --steps 40000
 python tools/export_tagger_onnx.py --model models/tagger-4e-full --out models/onnx/tagger-4e-full --check   # int8 34 MB, ~1 ms/message
 python tools/context_eval.py --onnx-tagger models/onnx/tagger-4e-full
+python train/train_lstm_tagger.py --out models/lstm-tagger                   # BiLSTM baseline on the same labels (no pretraining)
 python tools/word_dict.py && python tools/word_bigrams.py                    # data/keyboard/{word_dict,bigrams}.json
 python tools/pack_keyboard_assets.py --tagger models/onnx/tagger-4e-full     # -> keyboard/android/app/src/main/assets
 ```
