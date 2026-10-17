@@ -95,6 +95,7 @@ def main(argv=None):
     ap.add_argument("--patience", type=int, default=4)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--score-only", action="store_true", help="skip training, score the saved model")
+    ap.add_argument("--init", help="continue from this model.pt (same architecture flags) instead of random init")
     args = ap.parse_args(argv)
 
     import torch
@@ -111,6 +112,8 @@ def main(argv=None):
         model.load_state_dict(torch.load(out / "model.pt", map_location="cpu"))
         score_sets(model, vocab, torch, md, out.name)
         return
+    if args.init:
+        model.load_state_dict(torch.load(ROOT / args.init, map_location="cpu"))
     model = model.to(device)
     train_rows, valid_rows = read(args.train), read(args.valid)
     print(f"BiLSTM {sum(p.numel() for p in model.parameters()) / 1e6:.1f}M params; labels {len(vocab)}; "
