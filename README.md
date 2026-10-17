@@ -212,13 +212,14 @@ python tools/context_eval.py --onnx-tagger models/onnx/tagger-4e-full
 python train/train_lstm_tagger.py --out models/lstm-tagger                   # BiLSTM on the same labels (no pretraining)
 python tools/export_tagger_onnx.py --lstm --model models/lstm-tagger --out models/onnx/lstm-tagger --check   # int8 8.5 MB
 python tools/word_dict.py && python tools/word_bigrams.py                    # data/keyboard/{word_dict,bigrams}.json
-python tools/pack_keyboard_assets.py --tagger models/onnx/lstm-tagger-512x3  # -> keyboard/android/app/src/main/assets
+python tools/pack_keyboard_assets.py --tagger models/onnx/lstm-tagger-512x3-ft  # -> keyboard/android/app/src/main/assets
 ```
 
 Surprise: on these labels a byte-level BiLSTM trained from scratch beats the pretrained pruned encoder: 2 layers ×
 384 (8.7M, 10 minutes) gives real test CER 8.52 vs 8.77 at a quarter of the size, and 3 layers × 512 (19.9M,
-`--hidden 512 --layers 3 --steps 30000`) reaches **7.89** (dev 4.54), on par with the pruned seq2seq without a
-decode loop: int8 19.3 MB, 0.3 ms per word, 90% standalone word accuracy. That is the keyboard's default tagger;
+`--hidden 512 --layers 3 --steps 30000`, then 30k more with `--init ... --lr 5e-4`) reaches **7.9** (dev 4.30),
+on par with the pruned seq2seq without a decode loop: int8 19.3 MB, 0.3 ms per word, 90% standalone word
+accuracy. That is the keyboard's default tagger (`models/onnx/lstm-tagger-512x3-ft`);
 both kinds export to the same ONNX interface (`input_ids`, `attention_mask` → `label_ids`).
 
 The Android IME (`keyboard/android/`, open in Android Studio) works like a pinyin keyboard: the user types

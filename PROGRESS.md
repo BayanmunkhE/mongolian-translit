@@ -159,8 +159,13 @@ Tick boxes as you go (`[x]`). GitHub and VS Code's Markdown preview render this 
     the end):** dev-mix CER **4.54**, real test **7.89** / EM 24.6, chat **5.81** / EM 70.0 — on par with the pruned
     seq2seq (7.72 / 7.46) with no decode loop; ONNX int8 **19.3 MB**, 0.3 ms/word, 2 ms/message; standalone word
     accuracy **89.9%** real / 91.8% chat (context adds nothing). **Now the keyboard's default tagger**
-    (`pack_keyboard_assets.py --tagger models/onnx/lstm-tagger-512x3`). Continuing it 30k steps at lr 5e-4
-    (`--init`, `models/lstm-tagger-512x3-ft`) to see whether it keeps improving.
+    (`pack_keyboard_assets.py --tagger models/onnx/lstm-tagger-512x3`).
+  - **Continued 30k steps at lr 5e-4 (`--init`, `models/lstm-tagger-512x3-ft`, 1.8 h):** dev-mix CER **4.30**
+    (from 4.54), real test 7.91 (tie), chat **5.59** / EM 67.5. Picked on dev as the rules say, so it is the
+    keyboard default now (ONNX int8 19.3 MB, same latency; numbers in `results/phone/bench_lstm-tagger-512x3-ft_onnx.md`).
+    Dev is still creeping down, so more steps / more data (the full 1M synthetic is already in) are the next lever;
+    the real-test plateau at ~7.9 suggests the remaining errors are label/reference ambiguities (ө/у, suffix
+    conventions), not capacity.
 - **Demo: n-best word choice (2026-10-15).** `/transliterate` returns `candidates` (beam n-best, casing-only
   duplicates merged, real-odds softmax) and `alternatives` (word positions where candidates differ,
   `translit/candidates.py`); the page renders those words as a dropdown and POSTs the reader's pick to
@@ -298,5 +303,6 @@ results log above.
 | 9 | Two-stage: synthetic → real | fine-tune the best model on 300–500 hand-annotated comments from *new* videos (never the test set) | minutes + annotation time | needs data | | | |
 | 10 | LLM baseline (zero/few-shot) | ask a general LLM to convert; strong reference point | – (API cost) | done with Gemma 3 12B (local): zero 18.14 / random-5 16.88 / retrieved-5 12.49 | 12.49 | 16.41 | – |
 | 11 | BiLSTM tagger (no pretraining) | byte → output-string labels, 2-layer BiLSTM 8.7M params (`train/train_lstm_tagger.py`) | 10 min | done: int8 ONNX 8.5 MB, 2 ms/message; beats #12 on dev | 8.52 | 23.1 | dev-mix 5.21 |
-| 11b | BiLSTM tagger, 3 × 512 | 19.9M params, 30k steps | 1.9 h | done: int8 ONNX 19.3 MB, 0.3 ms/word; keyboard default | **7.89** | 24.6 | dev-mix 4.54 |
+| 11b | BiLSTM tagger, 3 × 512 | 19.9M params, 30k steps | 1.9 h | done: int8 ONNX 19.3 MB, 0.3 ms/word | **7.89** | 24.6 | dev-mix 4.54 |
+| 11c | BiLSTM 3 × 512, +30k steps | continued at lr 5e-4 (`--init`) | 1.8 h | done: keyboard default (best dev) | 7.91 | 24.1 | dev-mix **4.30** |
 | 12 | ByT5 encoder tagger (pruned, pretrained) | same labels, 4-block pruned encoder 27.7M (`train/train_tagger.py`) | 1 h | done: int8 ONNX 34 MB, 2 ms/message | 8.77 | 22.6 | dev-mix 5.74 |
