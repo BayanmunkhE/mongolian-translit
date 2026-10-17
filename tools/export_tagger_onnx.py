@@ -1,13 +1,17 @@
 """Export the encoder-only tagger (train/train_tagger.py) to one ONNX graph and benchmark it per word.
 
   python tools/export_tagger_onnx.py --model models/tagger-4e --out models/onnx/tagger-4e --check
+  python tools/export_tagger_onnx.py --lstm --model models/lstm-tagger --out models/onnx/lstm-tagger --check
 
 Graph: input_ids, attention_mask -> label_ids (argmax over the head, per byte). Decoding is a table lookup
-(vocab.json) and needs no loop, so a word costs one forward pass. Also writes tagger.int8.onnx (MatMul weights
-quantized) and copies vocab.json.
+(vocab.json) and needs no loop, so a word costs one forward pass. Also writes tagger.int8.onnx (MatMul / LSTM
+weights quantized) and copies vocab.json. `--lstm` exports the BiLSTM tagger of train/train_lstm_tagger.py with
+the same inputs and outputs, so the app backend and the Android keyboard load either one unchanged; that graph
+runs the sequence unpacked, so feed it one unpadded message at a time (batch 1), which is how both callers work.
 """
 import argparse
 import json
+import math
 import shutil
 import sys
 import time
@@ -27,22 +31,52 @@ class Wrapped:
         return self.head(h).argmax(-1)
 
 
+class WrappedLstm:
+    """BiLSTM tagger without pack_padded_sequence (not exportable): batch 1, no padding."""
+
+    def __init__(self, model):
+        import torch
+        self.model, self.torch = model, torch
+
+    def __call__(self, input_ids, attention_mask):
+        # the mask zeroes padded embeddings; it also keeps attention_mask a graph input (same interface as the encoder)
+        h, _ = self.model.lstm(self.model.emb(input_ids) * attention_mask.unsqueeze(-1).to(self.torch.float32))
+        return self.model.head(h).argmax(-1)
+
+
+def load_lstm(model_dir, n_labels):
+    import torch
+    from train.train_lstm_tagger import build
+    info = json.loads((model_dir / "training_info.json").read_text(encoding="utf-8"))["args"]
+    model = build(torch, n_labels, info["d_emb"], info["hidden"], info["layers"], info["dropout"])
+    model.load_state_dict(torch.load(model_dir / "model.pt", map_location="cpu"))
+    return model.eval()
+
+
 def export(args):
     import onnx
     import torch
     from onnxruntime.quantization import QuantType, quantize_dynamic
-    from transformers import T5EncoderModel
     out = ROOT / args.out
     out.mkdir(parents=True, exist_ok=True)
     vocab = json.loads((ROOT / args.model / "vocab.json").read_text(encoding="utf-8"))
-    enc = T5EncoderModel.from_pretrained(ROOT / args.model).eval()
-    head = torch.nn.Linear(enc.config.d_model, len(vocab))
-    head.load_state_dict(torch.load(ROOT / args.model / "head.pt", map_location="cpu"))
-    head.eval()
-    for p in list(enc.parameters()) + list(head.parameters()):
-        p.requires_grad_(False)
     mod = torch.nn.Module()
-    mod.forward = Wrapped(enc, head)
+    if args.lstm:
+        model = load_lstm(ROOT / args.model, len(vocab))
+        params = list(model.parameters())
+        mod.forward = WrappedLstm(model)
+        op_types = ["MatMul", "LSTM"]
+    else:
+        from transformers import T5EncoderModel
+        enc = T5EncoderModel.from_pretrained(ROOT / args.model).eval()
+        head = torch.nn.Linear(enc.config.d_model, len(vocab))
+        head.load_state_dict(torch.load(ROOT / args.model / "head.pt", map_location="cpu"))
+        head.eval()
+        params = list(enc.parameters()) + list(head.parameters())
+        mod.forward = Wrapped(enc, head)
+        op_types = ["MatMul"]
+    for p in params:
+        p.requires_grad_(False)
     ids = torch.tensor([encode("sain bnu")])
     mask = torch.ones_like(ids)
     with torch.no_grad():
@@ -56,7 +90,7 @@ def export(args):
     for node in m.graph.node:  # weights come out as Constant nodes; the quantizer wants initializers
         if node.op_type == "Constant" and node.attribute and node.attribute[0].name == "value":
             t = node.attribute[0].t
-            if len(t.dims) == 2 and t.dims[0] * t.dims[1] >= 4096:
+            if len(t.dims) >= 2 and math.prod(t.dims) >= 4096:
                 t.name = node.output[0]
                 m.graph.initializer.append(t)
                 continue
@@ -65,7 +99,7 @@ def export(args):
     m.graph.node.extend(keep)
     onnx.save(m, str(out / "tagger.onnx"))
     quantize_dynamic(str(out / "tagger.onnx"), str(out / "tagger.int8.onnx"), weight_type=QuantType.QInt8,
-                     op_types_to_quantize=["MatMul"])
+                     op_types_to_quantize=op_types)
     shutil.copy(ROOT / args.model / "vocab.json", out / "vocab.json")
     for p in sorted(out.glob("*.onnx")):
         print(f"{p.name}: {p.stat().st_size / 2**20:.1f} MB")
@@ -120,6 +154,7 @@ def main(argv=None):
     ap.add_argument("--model", default="models/tagger-4e")
     ap.add_argument("--out", default="models/onnx/tagger-4e")
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--lstm", action="store_true", help="the model is a train/train_lstm_tagger.py checkpoint")
     args = ap.parse_args(argv)
     if not (ROOT / args.out / "tagger.onnx").exists():
         export(args)

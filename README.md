@@ -209,10 +209,15 @@ python train/train_tagger.py --encoder models/byt5-pruned-4e2d-1024-ft2 --train 
     --valid data/tagger_full/valid.jsonl --vocab data/tagger_full/vocab.json --out models/tagger-4e-full --steps 40000
 python tools/export_tagger_onnx.py --model models/tagger-4e-full --out models/onnx/tagger-4e-full --check   # int8 34 MB, ~1 ms/message
 python tools/context_eval.py --onnx-tagger models/onnx/tagger-4e-full
-python train/train_lstm_tagger.py --out models/lstm-tagger                   # BiLSTM baseline on the same labels (no pretraining)
+python train/train_lstm_tagger.py --out models/lstm-tagger                   # BiLSTM on the same labels (no pretraining)
+python tools/export_tagger_onnx.py --lstm --model models/lstm-tagger --out models/onnx/lstm-tagger --check   # int8 8.5 MB
 python tools/word_dict.py && python tools/word_bigrams.py                    # data/keyboard/{word_dict,bigrams}.json
 python tools/pack_keyboard_assets.py --tagger models/onnx/tagger-4e-full     # -> keyboard/android/app/src/main/assets
 ```
+
+Surprise: on these labels a byte-level BiLSTM trained from scratch (8.7M parameters, 10 minutes) matches or beats
+the pretrained pruned encoder (real test CER 8.52 vs 8.77, dev 5.21 vs 5.74) at a quarter of the size, so the
+keyboard can ship either graph; both export to the same ONNX interface (`input_ids`, `attention_mask` → `label_ids`).
 
 The Android IME (`keyboard/android/`, open in Android Studio) works like a pinyin keyboard: the user types
 Latin, the strip shows Cyrillic candidates, space commits the first one. Lookup order: the user's own past

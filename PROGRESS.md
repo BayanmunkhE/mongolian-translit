@@ -146,7 +146,16 @@ Tick boxes as you go (`[x]`). GitHub and VS Code's Markdown preview render this 
     or rewrite those two commits (no remote yet, nothing pushed).
   - **LSTM baseline (rubric: TF-IDF / LSTM / Transformer):** `train/train_lstm_tagger.py`, a byte-level 2-layer
     BiLSTM tagger (8.7M params, no pretraining) on the same labels; queued after the tagger (`results/queue_lstm.py`).
-    Result below in the methods table (#11) once it finishes.
+    **Result (`models/lstm-tagger`, 20k steps, 10 min, best step 18k): dev-mix CER 5.21 — better than the pretrained
+    pruned-ByT5 encoder tagger (5.74).** Real test **8.52** / EM 23.1 (ByT5 tagger 8.77), chat test 6.58 (tie).
+    ONNX int8 (`--lstm` in `tools/export_tagger_onnx.py`, same inputs/outputs so the app backend and the keyboard
+    load it unchanged): **8.5 MB** (ByT5 tagger 33.8), real 8.52 / chat 6.69, 0.4 ms/word, 2 ms/message. Standalone
+    word accuracy 87.6% real / 91.0% chat (ByT5 tagger 83.6 / 82.0); the 2-word context adds little here (88.4 /
+    89.3). Reading: for byte-level tagging with 1M labelled rows, pretraining does not pay at this size — the
+    pretrained encoder wins only as a seq2seq (beam search, 6.15 CER). Candidate to replace the ByT5 tagger in the
+    keyboard (4x smaller, same speed, slightly better). A 3-layer / hidden-512 variant (19.9M) is training
+    (`models/lstm-tagger-512x3`, 30k steps, ~2 h). The process exits with 0xC0000409 at interpreter teardown after
+    writing everything (CUDA/cuDNN on Windows); results are complete.
 - **Demo: n-best word choice (2026-10-15).** `/transliterate` returns `candidates` (beam n-best, casing-only
   duplicates merged, real-odds softmax) and `alternatives` (word positions where candidates differ,
   `translit/candidates.py`); the page renders those words as a dropdown and POSTs the reader's pick to
@@ -283,5 +292,5 @@ results log above.
 | 8 | ByT5-small from scratch | same architecture, random weights; shows what pretraining adds | 2 × 1 h | done: does not converge in 7k steps (with or without warmup) | 100 | 0 | 100+ (valid) |
 | 9 | Two-stage: synthetic → real | fine-tune the best model on 300–500 hand-annotated comments from *new* videos (never the test set) | minutes + annotation time | needs data | | | |
 | 10 | LLM baseline (zero/few-shot) | ask a general LLM to convert; strong reference point | – (API cost) | done with Gemma 3 12B (local): zero 18.14 / random-5 16.88 / retrieved-5 12.49 | 12.49 | 16.41 | – |
-| 11 | BiLSTM tagger (no pretraining) | byte → output-string labels, 2-layer BiLSTM 8.7M params (`train/train_lstm_tagger.py`) | 15 min | running 2026-10-17 | | | |
+| 11 | BiLSTM tagger (no pretraining) | byte → output-string labels, 2-layer BiLSTM 8.7M params (`train/train_lstm_tagger.py`) | 10 min | done: int8 ONNX 8.5 MB, 2 ms/message; beats #12 on dev | 8.52 | 23.1 | dev-mix 5.21 |
 | 12 | ByT5 encoder tagger (pruned, pretrained) | same labels, 4-block pruned encoder 27.7M (`train/train_tagger.py`) | 1 h | done: int8 ONNX 34 MB, 2 ms/message | 8.77 | 22.6 | dev-mix 5.74 |
