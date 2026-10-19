@@ -259,3 +259,8 @@ def index():
 @app.get("/keyboard")
 def keyboard_page():
     return FileResponse(STATIC / "keyboard.html")
+
+
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+
+app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")  # images / GIFs for the demo pages
