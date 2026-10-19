@@ -13,8 +13,8 @@ for i, c in enumerate("asdfghjkl"):
     KEYS[c] = (60 + 120 * i, 1960)
 for i, c in enumerate("zxcvbnm"):
     KEYS[c] = (180 + 120 * i, 2086)
-KEYS[" "] = (300, 2212)
-KEYS[","] = (659, 2212); KEYS["."] = (779, 2212); KEYS["!"] = (899, 2212); KEYS["?"] = (1019, 2212)
+KEYS[" "] = (270, 2212)  # bottom row: space (5 units) + - , . ! ? (1 unit each) over 1080 px
+KEYS["-"] = (594, 2212); KEYS[","] = (702, 2212); KEYS["."] = (810, 2212); KEYS["!"] = (918, 2212); KEYS["?"] = (1026, 2212)
 SHIFT = (60, 2086)
 
 

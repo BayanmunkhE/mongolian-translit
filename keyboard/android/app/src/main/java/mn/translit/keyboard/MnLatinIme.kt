@@ -45,7 +45,7 @@ class MnLatinIme : InputMethodService() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.parseColor("#ECE8DF")) }
         strip = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; minimumHeight = dp(44) }
         root.addView(HorizontalScrollView(this).apply { addView(strip) })
-        for (row in listOf("qwertyuiop", "asdfghjkl", "^zxcvbnm<", " ,.!?")) root.addView(keyRow(row))
+        for (row in listOf("qwertyuiop", "asdfghjkl", "^zxcvbnm<", " -,.!?")) root.addView(keyRow(row))  // '-' joins English + suffix (prototype-g)
         showSuggestions(emptyList())
         return root
     }
