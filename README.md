@@ -1,19 +1,43 @@
 # mn-translit — informal Latin-script → Cyrillic Mongolian
 
-AI Engineer capstone (AI Academy Asia, NLP track).
-
-Many Mongolians type in Latin letters with no fixed convention:
+Many Mongolians type in Latin letters with no fixed convention, often mixed with Cyrillic and English
+in the same message. Search, chatbots, machine translation and screen readers only understand the
+Cyrillic. This project converts the Latin back to correct Cyrillic, on a server and inside a phone keyboard.
 
 ```
 za bi margaash ugluu irne      →  За би маргааш өглөө ирнэ
 bi meeting-ruu orloo           →  Би meeting-рүү орлоо
+ene kino үнэхээр goy bna       →  Энэ кино үнэхээр гоё байна
 ```
 
-ө is written u/o/ö, ү as u/v/ü, х as h/kh/x, long vowels get dropped, punctuation
-is skipped, and English words are mixed in. This project fine-tunes **ByT5-small**
-on synthetic pairs to convert such text to correct Cyrillic. The model is compared
-with two rule baselines on a synthetic test set and on a hand-collected real test
-set, and served in a web demo.
+<p align="center"><img src="results/keyboard/emulator_typing.gif" width="420"
+  alt="Android keyboard prototype: typing 'Yag odoo ene prototype-g turshij bna' produces 'Яг одоо энэ prototype-г туршиж байна'"></p>
+
+**Results** on 195 real YouTube comments that were never used for training or tuning
+(character error rate, lower is better; `results/chat2/results.md`, `results/llm/results.md`):
+
+| System | Size | Real-test CER | Char. accuracy |
+|---|---:|---:|---:|
+| Rule baseline (naive letter map) | – | 19.7 | 80% |
+| Gemma 3 12B, zero-shot | 12B | 18.1 | 82% |
+| Gemma 3 12B, 5 retrieved examples | 12B | 12.5 | 88% |
+| **ByT5-small, fine-tuned in 3 stages** (server) | 300M | **6.2** | **94%** |
+| Pruned ByT5, 4 enc + 2 dec blocks, ONNX int8 | 46M | 7.7 | 92% |
+| **BiLSTM byte tagger, ONNX int8** (keyboard) | 19 MB | 7.9 | 92% |
+
+* The fine-tuned 300M model has half the errors of a 40× larger LLM given retrieved examples, at
+  1/50–1/1000 of the serving cost, and runs offline on a CPU.
+* The keyboard model converts a word in **0.3 ms** on a desktop CPU and gets 90% of 800 real-test words
+  right with 2 words of context (`results/keyboard/`); the keyboard adds a dictionary and the user's own
+  picks on top.
+* Differences are checked with bootstrap confidence intervals (`results/*/bootstrap_*.md`).
+
+**What is in the repo:** synthetic data generation (1M pairs with sampled writing styles), a
+hand-annotated real test set and annotation UI, ByT5 fine-tuning (Colab T4 or local GPU), evaluation
+with rule and LLM baselines, structured pruning and ONNX export, a FastAPI web demo with per-word
+alternatives and a pinyin-style keyboard page, and a Kotlin Android IME running the 19 MB model
+on-device. Built as the AI Engineer capstone (AI Academy Asia, NLP track); the full experiment log
+is in `PROGRESS.md`.
 
 ## Repo layout
 
@@ -173,18 +197,6 @@ suggestion are remembered in the browser (`localStorage`). Logic in `translit/ke
 (needs `data/rag/` from `rag/corpus.py`; the first start downloads the e5 model, ~1 GB, once;
 `RAG_RETRIEVER=bm25` works offline). Inference runs on CPU. Without a model the app serves the baseline only.
 
-**MacBook from the zip bundle** (`mn-translit-mac.zip`: code, hand-made data, results, RAG index, small model):
-
-```bash
-cd ~/Desktop && unzip mn-translit-mac.zip && cd mn-translit
-brew install python@3.12                       # if python3.12 is missing
-python3.12 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-app.txt pytest
-pytest -q && uvicorn app.main:app --port 7860  # then open http://localhost:7860
-```
-
-Start it once at home with internet before presenting, so the e5 model is cached.
-
 **Hosting options** (free Spaces need a PRO account as of 2026-10; a quick Cloudflare tunnel,
 `tools/start_public_demo.ps1`, serves the local app for a presentation):
 
@@ -234,19 +246,9 @@ picks → packed dictionary (30k words, re-ranked by the previous committed word
 the 2 previous words as context → seq2seq model only when the tagger meets a byte it has no label for. The
 raw Latin is always the last candidate, so English stays English.
 
-## Git: Windows ↔ MacBook
+## Development notes
 
-```bash
-# on the machine that has the folder
-git init && git add . && git commit -m "Initial project skeleton"
-# create an empty repo on GitHub, then:
-git remote add origin https://github.com/<you>/mn-translit.git
-git branch -M main && git push -u origin main
-# on the MacBook
-git clone https://github.com/<you>/mn-translit.git
-```
-
-`.gitattributes` keeps line endings as LF on both machines. `.github/workflows/tests.yml` runs `pytest -q`
+`.gitattributes` keeps line endings as LF on Windows and macOS. `.github/workflows/tests.yml` runs `pytest -q`
 (no torch) on every push.
 
 ## Limitations
