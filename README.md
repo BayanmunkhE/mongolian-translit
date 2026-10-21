@@ -10,6 +10,9 @@ bi meeting-ruu orloo           →  Би meeting-рүү орлоо
 ene kino үнэхээр goy bna       →  Энэ кино үнэхээр гоё байна
 ```
 
+**Live demo: [bayanmunkhe.github.io/mongolian-translit](https://bayanmunkhe.github.io/mongolian-translit/)**
+(message converter and a pinyin-style keyboard page; the 19 MB model runs in your browser, nothing is sent to a server)
+
 <p align="center"><img src="results/keyboard/emulator_typing.gif" width="420"
   alt="Android keyboard prototype: typing 'Yag odoo ene prototype-g turshij bna' produces 'Яг одоо энэ prototype-г туршиж байна'"></p>
 
@@ -200,6 +203,10 @@ suggestion are remembered in the browser (`localStorage`). Logic in `translit/ke
 **Hosting options** (free Spaces need a PRO account as of 2026-10; a quick Cloudflare tunnel,
 `tools/start_public_demo.ps1`, serves the local app for a presentation):
 
+* `site/` — the public demo: a static page that runs the BiLSTM tagger in the browser with onnxruntime-web
+  (`site/engine.js` ports `translit/onnx_backend.py`, `mixed.py` and `keyboard.py`). `python tools/build_site.py`
+  writes `site/assets/` (model, trimmed dictionary and bigrams, Python reference outputs); `site/selftest.html`
+  must report `bad=0` before deploying. The built folder is published on the `gh-pages` branch (GitHub Pages).
 * `Dockerfile` — full app with torch and `byt5-small-chat2` (~2 GB image, beam search, n-best).
 * `deploy/onnx.Dockerfile` — `MODEL_BACKEND=onnx-tagger`: onnxruntime only, ~300 MB image, runs on the
   smallest free tiers (Render, Cloud Run, Fly). Slightly lower accuracy (tagger, no beam search).

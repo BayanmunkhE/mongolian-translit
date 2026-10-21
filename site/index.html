@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Латин → кирилл хөрвүүлэгч</title>
+<meta name="description" content="Латин үсгээр бичсэн монгол текстийг кирилл болгох нейрон загвар. Таны төхөөрөмж дотор, сервергүй ажиллана.">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1d2330; --muted: #5d6677; --line: #dfe3ea;
+    --accent: #1f5fbf; --accent-text: #fff; --kept: #b5521a; --soft: #eef2f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --card: #1d2128; --text: #e7eaf0; --muted: #9aa3b2; --line: #2e343e;
+      --accent: #5b9bff; --accent-text: #0b1220; --kept: #f2a65a; --soft: #222731;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.45; }
+  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 1.45rem; margin: 10px 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 14px; }
+  .modes { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+  .mode-btn { display: inline-block; padding: 9px 16px; border-radius: 999px; font-weight: 600; text-decoration: none;
+              border: 1px solid var(--accent); color: var(--accent); }
+  .mode-btn.on { background: var(--accent); color: var(--accent-text); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+  textarea { width: 100%; min-height: 110px; font: inherit; font-size: 1.1rem; padding: 10px 12px; border-radius: 10px;
+             border: 1px solid var(--line); background: var(--bg); color: var(--text); resize: vertical; }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  button { font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line);
+           background: var(--card); color: var(--text); cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: default; }
+  .status { color: var(--muted); font-size: .85rem; margin-left: auto; }
+  .bar { height: 4px; background: var(--soft); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  #out { min-height: 60px; font-size: 1.2rem; white-space: pre-wrap; word-break: break-word; }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .examples button { font-size: .85rem; padding: 5px 10px; border-radius: 999px; color: var(--muted); }
+  .about h2 { font-size: 1.05rem; margin: 0 0 8px; }
+  .about p, .about li { color: var(--muted); font-size: .92rem; }
+  .about ul { padding-left: 20px; margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.me td { font-weight: 600; color: var(--text); }
+  a { color: var(--accent); }
+  footer { margin: 18px 0 8px; color: var(--muted); font-size: .85rem; }
+  .chat-btn { display: inline-flex; align-items: center; gap: 6px; margin: 4px 2px; padding: 6px 12px; border-radius: 999px;
+              color: #fff !important; font-weight: 600; text-decoration: none; }
+  .chat-btn.wa { background: #1f9d55; }
+  .chat-btn.vb { background: #6a55e0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Латин үсгээр бичсэн монгол текстийг кирилл болгох</h1>
+  <p class="sub">Жишээ: <i>za bi margaash ugluu irne</i> → <i>За би маргааш өглөө ирнэ</i>. Загвар таны төхөөрөмж дотор
+    ажиллана, бичсэн зүйл хаашаа ч илгээгдэхгүй.</p>
+  <nav class="modes">
+    <a class="mode-btn on" href="./">Мессеж хөрвүүлэх</a>
+    <a class="mode-btn" href="keyboard.html">⌨ Гарын горим</a>
+  </nav>
+
+  <div class="card">
+    <label for="inp">Латин, кирилл эсвэл холимог текст</label>
+    <textarea id="inp" maxlength="1000" placeholder="sain baina uu, margaash hed tsagt uulzah ve?"></textarea>
+    <div class="row">
+      <button class="primary" id="go" disabled>Хөрвүүлэх</button>
+      <button id="clear">Цэвэрлэх</button>
+      <span class="status" id="status">Загвар ачаалж байна…</span>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="examples" id="examples"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-top:0">
+      <label style="margin:0">Кирилл</label>
+      <span class="status" id="ms"></span>
+      <button id="copy">Хуулах</button>
+    </div>
+    <div id="out" aria-live="polite"></div>
+  </div>
+
+  <div class="card about">
+    <h2>Төслийн тухай</h2>
+    <p>Google-ийн ByT5-small загварыг 1 сая синтетик хос ба гараар засварласан бодит мессежээр сургаад, утсанд
+      багтах 19 MB-ын BiLSTM таггер болгон жижигрүүлсэн. Энэ хуудас тэр таггерийг onnxruntime-web-ээр шууд браузерт ажиллуулж байна.
+      Бодит YouTube сэтгэгдэл дээрх үсгийн нарийвчлал:</p>
+    <table>
+      <tr><th>Систем</th><th class="num">Хэмжээ</th><th class="num">Нарийвчлал</th></tr>
+      <tr><td>Дүрэмд суурилсан хөрвүүлэгч</td><td class="num">–</td><td class="num">80%</td></tr>
+      <tr><td>Gemma 3 12B, 5 жишээтэй</td><td class="num">12B</td><td class="num">88%</td></tr>
+      <tr><td>ByT5-small (сервер хувилбар)</td><td class="num">300M</td><td class="num">94%</td></tr>
+      <tr class="me"><td>BiLSTM таггер (энэ хуудас, утасны гар)</td><td class="num">19 MB</td><td class="num">92%</td></tr>
+    </table>
+    <p>Код, өгөгдөл, туршилтын бүрэн тэмдэглэл:
+      <a href="https://github.com/BayanmunkhE/mongolian-translit">github.com/BayanmunkhE/mongolian-translit</a></p>
+  </div>
+
+  <footer>Э.Баянмөнх · санал, хамтын ажиллагаа: <a href="tel:+97699242409">+976 9924 2409</a>
+    <a class="chat-btn wa" href="https://wa.me/97699242409" target="_blank" rel="noopener">WhatsApp</a>
+    <a class="chat-btn vb" href="viber://chat?number=%2B97699242409">Viber</a>
+    · <span id="model"></span></footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+<script src="engine.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const inp = $('inp'), out = $('out'), go = $('go'), status = $('status'), ms = $('ms');
+  let ready = false, req = 0, timer = null;
+
+  async function convert() {
+    const text = inp.value.trim();
+    if (!ready) return;
+    if (!text) { out.textContent = ''; ms.textContent = ''; return; }
+    const id = ++req;
+    const t0 = performance.now();
+    const res = await MnTranslit.convertMixed(text);
+    if (id !== req) return;
+    out.textContent = res;
+    ms.textContent = Math.round(performance.now() - t0) + ' мс';
+  }
+
+  inp.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(convert, 250); });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); convert(); } });
+  go.onclick = convert;
+  $('clear').onclick = () => { inp.value = ''; out.textContent = ''; ms.textContent = ''; inp.focus(); };
+  $('copy').onclick = async () => {
+    try { await navigator.clipboard.writeText(out.textContent); $('copy').textContent = 'Хуулагдлаа'; }
+    catch (e) { prompt('Хуулж авна уу:', out.textContent); }
+    setTimeout(() => $('copy').textContent = 'Хуулах', 1500);
+  };
+
+  const examples = ['za bi margaash ugluu irne', 'unuudur ih zavgui bailaa, daraa yariya', 'ene kino үнэхээр goy bna',
+                    'bi meeting-ruu orloo', 'sain bnu, chi yu hiij bna?'];
+  examples.forEach(s => {
+    const b = document.createElement('button'); b.textContent = s;
+    b.onclick = () => { inp.value = s; convert(); };
+    $('examples').appendChild(b);
+  });
+
+  MnTranslit.load({}, p => { $('bar').style.width = Math.round(p * 100) + '%'; status.textContent = 'Загвар ачаалж байна… ' + Math.round(p * 100) + '%'; })
+    .then(info => {
+      ready = true; go.disabled = false;
+      status.textContent = 'Бэлэн';
+      $('bar').parentElement.style.visibility = 'hidden';
+      $('model').textContent = info.name + ' · ' + info.size_mb + ' MB, браузер дотор';
+      if (inp.value.trim()) convert();
+    })
+    .catch(e => { status.textContent = 'Загвар ачаалж чадсангүй: ' + e.message; });
+})();
+</script>
+</body>
+</html>

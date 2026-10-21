@@ -28,6 +28,7 @@ python tools/tagger_data.py && python train/train_tagger.py && python tools/expo
 python train/train_lstm_tagger.py && python tools/export_tagger_onnx.py --lstm --model models/lstm-tagger --out models/onnx/lstm-tagger --check  # BiLSTM tagger: 8.5 MB int8, beats the ByT5 tagger
 MODEL_BACKEND=onnx-tagger MODEL_DIR=models/onnx/tagger-4e-full uvicorn app.main:app   # torch-free serving (deploy/onnx.Dockerfile)
 MODEL_DIR=models/byt5-mn uvicorn app.main:app --port 7860   # /keyboard = web keyboard mode (POST /suggest)
+python tools/build_site.py                             # static browser demo in site/ (GitHub Pages); open site/selftest.html over http, needs bad=0
 powershell -File tools/start_emulator.ps1               # Android emulator with the IME installed (portable JDK/Gradle/SDK in ~/tools)
 python tools/youtube_comments.py && python annotate/db.py load data/raw/youtube_candidates.jsonl
 uvicorn annotate.main:app --port 8000                  # or: docker compose up annotate
@@ -52,6 +53,9 @@ one puts the repo root on `sys.path` itself.
   Latin / transliterated queries get to the hand-made Cyrillic query's top-k. Never index real_dev/real_test.
 - `app/`: FastAPI (`POST /transliterate` → `{"model", "baseline", "candidates", "alternatives", ...}`,
   `POST /feedback` logs the reader's word pick to `data/feedback/`) + `static/index.html`.
+- `site/`: public static demo (GitHub Pages, `gh-pages` branch). `site/engine.js` is a JS port of
+  `translit/onnx_backend.py`, `mixed.py` and `keyboard.py` on onnxruntime-web; keep it in sync with them and
+  re-run `site/selftest.html` (compares with Python outputs from `tools/build_site.py`). `site/assets/` is git-ignored.
 - `translit/candidates.py`: beam n-best → per-word alternatives for the pick-a-word UI and the keyboard.
 - `keyboard/android/`: pinyin-style Android IME prototype (Kotlin + ONNX Runtime); assets come from
   `tools/export_onnx.py` (pruned student → encoder/decoder int8 ONNX) and `tools/word_dict.py`, never committed.

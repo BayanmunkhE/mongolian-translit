@@ -34,6 +34,7 @@ results/**/*.log
 results/llm/cache.jsonl
 results/phone/*.pt
 results/public_demo/
+site/assets/
 wandb/
 runs/
 
