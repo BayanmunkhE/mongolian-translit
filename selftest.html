@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Self-test</title>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+<script src="engine.js"></script>
+</head>
+<body>
+<pre id="log">running…</pre>
+<script>
+// Compares the browser port with the Python outputs in assets/selftest.json (tools/build_site.py).
+(async () => {
+  const log = document.getElementById('log');
+  const lines = [];
+  try {
+    const t0 = performance.now();
+    await MnTranslit.load({ keyboard: true });
+    const tLoad = performance.now() - t0;
+    const st = await (await fetch('assets/selftest.json')).json();
+    let ok = 0, bad = 0;
+    const t1 = performance.now();
+    for (const m of st.messages) {
+      const got = await MnTranslit.convertMixed(m.src.trim());
+      if (got === m.out) ok++; else { bad++; lines.push('MSG MISMATCH\n  src ' + m.src + '\n  py  ' + m.out + '\n  js  ' + got); }
+    }
+    const tMsg = (performance.now() - t1) / st.messages.length;
+    for (const k of st.keyboard) {
+      const got = (await MnTranslit.suggest(k.word, k.context, k.prev_cyr)).candidates;
+      if (JSON.stringify(got.slice(0, k.out.length)) === JSON.stringify(k.out.slice(0, 4))) ok++;
+      else { bad++; lines.push('KB MISMATCH ' + k.word + '\n  py ' + JSON.stringify(k.out) + '\n  js ' + JSON.stringify(got)); }
+    }
+    lines.unshift('RESULT ok=' + ok + ' bad=' + bad + ' load_ms=' + tLoad.toFixed(0) + ' ms_per_message=' + tMsg.toFixed(1));
+  } catch (e) {
+    lines.unshift('ERROR ' + (e && (e.stack || e.message) || e));
+  }
+  log.textContent = lines.join('\n');
+  document.title = 'done';
+  // local test runs post the result back (tools/build_site.py docs); harmless 404/405 on GitHub Pages
+  if (location.hostname === '127.0.0.1') fetch('/report', { method: 'POST', body: log.textContent }).catch(() => {});
+})();
+</script>
+</body>
+</html>

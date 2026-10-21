@@ -1,0 +1,6 @@
+{
+ "file": "tagger.int8.onnx",
+ "name": "lstm-tagger-512x3-ft",
+ "size_mb": 19.3,
+ "dict_words": 30000
+}

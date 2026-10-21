@@ -1,0 +1,378 @@
+{
+ "messages": [
+  {
+   "src": "za bi margaash ugluu irne",
+   "out": "За би маргааш өглөө ирнэ"
+  },
+  {
+   "src": "bi meeting-ruu orloo",
+   "out": "Би meeting-руу орлоо"
+  },
+  {
+   "src": "sain bnu, chi yu hiij bna?",
+   "out": "Сайн байна уу, чи юу хийж байна?"
+  },
+  {
+   "src": "margaash uulzy",
+   "out": "Маргааш уулзъя"
+  },
+  {
+   "src": "ok bolloo bayrlalaa",
+   "out": "Ок боллоо баярлалаа"
+  },
+  {
+   "src": "ene kino үнэхээр goy bna",
+   "out": "Энэ кино үнэхээр гоё байна"
+  },
+  {
+   "src": "Yag odoo ene prototype-g turshij bna",
+   "out": "Яг одоо энэ prototype-г туршиж байна"
+  },
+  {
+   "src": "unuudur ih zavgui bailaa, daraa yariya",
+   "out": "Өнөөдөр их завгүй байлаа, дараа ярья"
+  },
+  {
+   "src": "tgvl deploy-g 5d hiine",
+   "out": "Тэгвэл deploy-гэа 5д хийнэ"
+  },
+  {
+   "src": "LG zuragt avmaar bna 😊",
+   "out": "ЛоГ зурагт авмаар байна 😊"
+  },
+  {
+   "src": "baynaa chi duu sonsoj baihdaa duu sonsood demii yum shig bna ene zarim gadaaduud angilaar orchuulaad ogch geed bnashdee mongolchuudaa yum bodson deer baihaa",
+   "out": "байнаа чи дуу сонсож байхдаа дуу сонсоод дэмий юм шиг байна энэ зарим гадаадууд ангилаар орчуулаад өгч гээд бНАшдээ монголчуудаа юм бодсон дээр байхаа"
+  },
+  {
+   "src": "tanai hamtlagiig sonsoh unheer ih durtai goe hamtlag2 <3",
+   "out": "Танай хамтлагийг сонсох үнэхээр их дуртай гоё хамтлаг2 <3"
+  },
+  {
+   "src": "dandaa l bandi nariig harj durlaj duulj bh yum oor duu oor clip hiij boldoggui yum uu amjilt husie",
+   "out": "Дандаа л Банди нарыг харж дурлаж дуулж байх юм өөр дуү өөр clip хийж болдоггүй юм уу амжилт хүсье"
+  },
+  {
+   "src": "Odoo harj bga hun bnu😂",
+   "out": "Одоо харж байгаа хүн байна уу😂"
+  },
+  {
+   "src": "PINK LYNXD BAYARLALAA BID NAR BANK DEEREMDEHDEE ENE DUUG BAINGIIN SONSDOG SHUU BID NARIIN ZURHEND PINK LYNX UURD!!",
+   "out": "ПИНК ЛЛННХД БАЯРЛАЛАА БИД НАР БАНК ДЭЭРЭМДЭХДЭЭ ЭНЭ ДУУГ БАЙНГЫН СОНСДОГ ШҮҮ БИД НАРИН ЗҮРХЭНД ПИНК ЛЫНХ ҮҮРД!!"
+  },
+  {
+   "src": "vav goy shuu",
+   "out": "Вав гоё шүү"
+  },
+  {
+   "src": "huurhun bn... boljil bnshdee. amjilt husidaa duu nartaa",
+   "out": "Хөөрхөн байна... болжил байншдээ. амжилт хусаьдаа дуу нартаа"
+  },
+  {
+   "src": "Aan ta neg bichleg deer ene duug duulaad bsiin gaihsiin haha",
+   "out": "Аан та нэг бичлэг дээр энэ дууг дуулаад бүссын гайхсын хаха"
+  },
+  {
+   "src": "2022 ond vzej bgn laik goy duu shvv",
+   "out": "2022 онд үзэж байган лайк гоё дуу шүү"
+  },
+  {
+   "src": "vgledeg ni goe vglediin bna ene duug chi chimjii shvv amjilt :)",
+   "out": "үглэдэг нь гоё үүллэдийн байна энэ дууг чи чимжий шүү амжилт :)"
+  },
+  {
+   "src": "Goy duu shuu amjilt",
+   "out": "Гоё дуу шүү амжилт"
+  },
+  {
+   "src": "Bur sonsood l baimaar duu jhn bhdaa bnga sonsdog bsn odoo ch hurtel fan chini shuu 😊❤",
+   "out": "Бүр сонсоод л баймаар дуу жихан байхдаа байнга сонсдог байсан одоо ч хүртэл фан чинь шүү 😊❤"
+  },
+  {
+   "src": "yamar goy duu ve",
+   "out": "Ямар гоё дуу вэ"
+  },
+  {
+   "src": "Vnen goy duu bolson bn shvv",
+   "out": "Үнэн гоё дуу болсон байна шүү"
+  },
+  {
+   "src": "ene duug sonsoh yamar goy ym bee❤️",
+   "out": "Энэ дууг сонсох ямар гоё юм бээ❤️"
+  },
+  {
+   "src": "Novsh gj 28tai hun sonsoj bn hahahah",
+   "out": "Новш гэж 28тай хүн сонсож байна хахахах"
+  },
+  {
+   "src": "Ene humuusiig yrdoosoo oilgohgui ym. Ohoordom hev maygtai duu gargahaar huuhdiin buuvein duu gene. Joohon hev maygaa oorchlood dayrgaag duulahleer tom hunii duu gene. Tegeed ta nariinhaar bol ymar duug duu gehuu",
+   "out": "Энэ хүмүүсийг ердөөсөө ойлгохгүй юм. Өхөөрдөм хэв маягтай дуу гаргахаар хүүхдийн бүүвэйн дуу гэнэ. Жоохон хэв майгаа өөрчлөөд дайргааг дуулахлээр том хүний дуу гэнэ. Тэгээд та нарынхаар бол ямар Дууг дуу гэх үү"
+  },
+  {
+   "src": "gremix ta Baljidmaa aniad hairtai tee❤❤❤❤❤❤❤❤",
+   "out": "Gremix та Балжидмаа аниад хайртай ээ❤❤❤❤❤❤❤❤❤"
+  },
+  {
+   "src": "Ih goy duu bn iimerhuu duu gargaarai amjilt",
+   "out": "Их гоё дуу байна иймэрхүү дуу гаргаарай амжилт"
+  },
+  {
+   "src": "ih goy duu bna amjilt ih goy ugteim bna",
+   "out": "Их гоё дуу байна амжилт их гоё үгтэйм байна"
+  },
+  {
+   "src": "Goi duu shuu",
+   "out": "Гоё дуу шүү"
+  },
+  {
+   "src": "Ene bol mach goy buu. Yagaad gegel bvgd setgeleesee duulj baina. (Amilt)",
+   "out": "Энэ бол мач гоё буү. Яагаад ээгэл бүгд сэтгэлээсээ дуулж байна. (Амилт)"
+  },
+  {
+   "src": "2022 ond dursamjaa sanmaar sanagssad ene duug haij haij olj sonsloo. Barag odoo garaad baigaa duunuudiig guitsheer bn shu❤❤",
+   "out": "2022 онд дурсамжаа санмаар санагсад энэ дууг хайж хайж олж сонслоо. Бараг одоо гараад байгаа дуунууддггггйцэээр ба байна шүү❤❤"
+  },
+  {
+   "src": "tsaashdaa oshoo ih olon duu gargaarai ;)",
+   "out": "Цаашдаа өшөө их олон дуу гаргаарай ;)"
+  },
+  {
+   "src": "2021 11/21 sonsoor l bna unheer shn duushuu",
+   "out": "2021 11/21 сонсоор л байна үнэхээр шинэ дууш уу"
+  },
+  {
+   "src": "hariigaa sanaad irsen yum uu ntr",
+   "out": "Харийгаа санаад ирсэн юм уу нтр"
+  },
+  {
+   "src": "Bur durlsa ene duund",
+   "out": "Бүр дурласаа энэ дуунд"
+  },
+  {
+   "src": "hugshinlsu ghdee mundagsde duu.yoo yahaaraa iiim duu",
+   "out": "Хөгшинлсө гэхдээ мундагсдаг дуу.Ёо яахаараа ийм дуу"
+  },
+  {
+   "src": "2022 ond hen sonsoj bna?",
+   "out": "2022 онд хэн сонсож байна?"
+  },
+  {
+   "src": "Ymarch zasvargui jinhene mongol ohin bn😊😊😊",
+   "out": "Ямарч засваргүй жинхэнэ монгол охин байна😊😊😊"
+  },
+  {
+   "src": "iim goe duu baidag baisan ymuu ❤❤",
+   "out": "Ийм гоё дуу байдаг байсан юмуу ❤❤"
+  },
+  {
+   "src": "Anhnii hairdaa ene duug duulj ogc bilee❤",
+   "out": "Анхны хайрдаа энэ дууг дуулж өгч билээ❤"
+  },
+  {
+   "src": "Uneheer shn duu",
+   "out": "Үнэхээр шинэ дуу"
+  },
+  {
+   "src": "Ene duug vhen² vhtlee sonsnoo❤",
+   "out": "Энэ дууг үхэн» үхтлээ сонсноо❤"
+  },
+  {
+   "src": "ene duug sonsoh bolgondool uilah ym hairtai hvnee sanaad baih ym :(",
+   "out": "Энэ дууг сонсох болгондол уйлах юм хайртай хүнээ санаад байх юм :("
+  },
+  {
+   "src": "❤❤❤ bi hair uur yug ch nederdeggui ene duund",
+   "out": "❤❤❤ Би хайр өөр юг ч нэдэрдэггүй энэ дуунд"
+  },
+  {
+   "src": "2022 ond sonsja hvn bnu",
+   "out": "2022 онд сонсаж хүн байна уу"
+  },
+  {
+   "src": "2226 onoos sonsoj bna",
+   "out": "2226 оноос сонсож байна"
+  },
+  {
+   "src": "2022 nice duu bolno",
+   "out": "2022 nice дуу болно"
+  },
+  {
+   "src": "bayartsengel yag l hairiin duu duulah gj toson yumshig baina shvv ene duug odor bolgon sonsoh durtai ❤🎉",
+   "out": "Баярцэнгэл яг л хайрын дуу дуулах гэж тосон юмшиг байна шүү энэ дууг өдөр болгон сонсох дуртай ❤🎉"
+  },
+  {
+   "src": "Bayrtsengel ah manai sumd ireed ene duu bas ter ohin taniltsiy ohin bas duulaad busad duugaa duulsan 😘😘😘",
+   "out": "Байрцэнгэл ах манай сумд ирээд энэ дуу бас тэр охин танилций охин бас дуулаад бусад дуугаа дуулсан 😘😘😘"
+  },
+  {
+   "src": "amid hun bnu",
+   "out": "Амьд хүн байна уу"
+  },
+  {
+   "src": "Amidral bi chamd hairtai Hanilsan hanidaa hairtai Unguruulsen tsag hugatsaandaa hairtai Nzalsan nzuuddaa hairtai Amid bgaa tsag moch buhendee bi hairtai ❤❤",
+   "out": "Амьдрал би чамд хайртай Ханилсан ханьдаа хайртай Өнгөрүүлсэн цаг хугацаандаа хайртай Назалсан наазууддаа хайртай Амьд байгаа цаг мөч бүхэндээ би хайртай ❤❤"
+  },
+  {
+   "src": "Bi dandaa sonsdog my zvrhebd baidag duu hvn 2",
+   "out": "Би дандаа сонсдог нь зүрхэнд байдаг дуу хүн 2"
+  },
+  {
+   "src": "Enu duug minii hani sonsuulaad, ergeed niilsen dee ❤",
+   "out": "Энү дууг миний хань сонсуулаад, эргээд нийлсэн дээ ❤"
+  },
+  {
+   "src": "Gaihaltai. 50nasandaa ene erchee aldchihgui yumsan da",
+   "out": "Гайхалтай. 50насандаа энэ эрчээ алдчихгүй юмсан даа"
+  },
+  {
+   "src": "2022ond sonsoj bna neg hvniig mash ih sanaj bna mash ih hamtdaa bsan bol shan",
+   "out": "2022онд сонсож байна нэг хүнийг маш их санаж байна маш их хамтдаа байсан бол Шаа"
+  },
+  {
+   "src": "Orilj bgaa hesgiin hassan bol unen cool boloh bj",
+   "out": "Орилж байгаа хэсгийн хассан бол үнэн цоoл болох байж"
+  },
+  {
+   "src": "Estoi goe duuldag shuu. Bnga sonsdog. Minii chihiig bayrluuldag chamd bayrlalaa",
+   "out": "Ёстой гоё дуулдаг шүү. Бнга сонсдог. Миний чихийг байрлуулдаг чамд баярлалаа"
+  },
+  {
+   "src": "ene bol damba xd",
+   "out": "Энэ бол Дамба xD"
+  },
+  {
+   "src": "yooe ter mori n uren tasartsan saihan smittan bnaa ern goe duu yumaa anh erdoo sonin bish bsn good job UKA",
+   "out": "Ёоо тэр морь нь үрэн тасартан сайхан смиттан байна эрэн гоё дуу юмаа анх ердөө сонин биш байсан гоод Жоб УКА"
+  },
+  {
+   "src": "Clip, ongo, design, duu, duunii ug buh yum goe boljee :)",
+   "out": "Cлиp, өнгө, design, дуу, дууны үг бүх юм гоё болжээ :)"
+  },
+  {
+   "src": "yostoi goy duu bn sh dee huwstas ni ch goyiin bn maluudaa",
+   "out": "Ёстой гоё дуу байба ш ш дээ хувьстас нь ч гоёён байна малуудаа"
+  },
+  {
+   "src": "goy ungute clip bn",
+   "out": "Гоё өнгөтэй clip байна"
+  },
+  {
+   "src": "2020 ond sonsoj bgaa ni like",
+   "out": "2020 онд сонсож байгаа нь like"
+  },
+  {
+   "src": "2016 oni nostalgia shuud tolgoid orloo goy duu shuu✌",
+   "out": "2016 оны носталгай шууд толгойд орлоо гоё дуу шүү✌"
+  },
+  {
+   "src": "xaxaxa yag unen",
+   "out": "Хааахаа яг үнэн"
+  },
+  {
+   "src": "2019 sonsoj bga hun bnu",
+   "out": "2019 сонсож байгаа хүн байна уу"
+  },
+  {
+   "src": "speed-1.25 bolgood sonswol neeree iluu goe yum baina :-)",
+   "out": "Speed-1.25 болгоод сонсвол нээрээ илүү гоё юм байна :-)"
+  },
+  {
+   "src": "yugaa hudlaa shaagad bna ve, nadaas iluu duuldag hun baihgui gej hezee helsiim? Udurt 100 hun uheed baina uu?🤣🤣🤣",
+   "out": "Юугаа худлаа шаагаад байна вэ, надаас илүү дуулдаг хүн байхгүй гэж хэзээ хэлсийн? Өдөрт 100 хүн үхээд байна уу?🤣🤣🤣"
+  }
+ ],
+ "keyboard": [
+  {
+   "word": "margaash",
+   "context": [],
+   "prev_cyr": null,
+   "out": [
+    "маргааш",
+    "маргаашь",
+    "margaash"
+   ]
+  },
+  {
+   "word": "uulzy",
+   "context": [
+    "margaash"
+   ],
+   "prev_cyr": "маргааш",
+   "out": [
+    "уулзъя",
+    "уулзая",
+    "uulzy"
+   ]
+  },
+  {
+   "word": "bna",
+   "context": [
+    "sain"
+   ],
+   "prev_cyr": "сайн",
+   "out": [
+    "байна",
+    "bna"
+   ]
+  },
+  {
+   "word": "dr",
+   "context": [
+    "test",
+    "server"
+   ],
+   "prev_cyr": null,
+   "out": [
+    "дээр",
+    "дараа",
+    "дороо",
+    "dr"
+   ]
+  },
+  {
+   "word": "Yag",
+   "context": [],
+   "prev_cyr": null,
+   "out": [
+    "Яг",
+    "Ягаа",
+    "Ягъя",
+    "Yag"
+   ]
+  },
+  {
+   "word": "prototype-g",
+   "context": [
+    "odoo",
+    "ene"
+   ],
+   "prev_cyr": "энэ",
+   "out": [
+    "prototype-г",
+    "prototype-g"
+   ]
+  },
+  {
+   "word": "turshij",
+   "context": [
+    "ene",
+    "prototype-g"
+   ],
+   "prev_cyr": null,
+   "out": [
+    "туршиж",
+    "турший",
+    "turshij"
+   ]
+  },
+  {
+   "word": "meeting",
+   "context": [],
+   "prev_cyr": null,
+   "out": [
+    "meeting",
+    "мeeting"
+   ]
+  }
+ ]
+}
